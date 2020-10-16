@@ -1,10 +1,9 @@
 # akkorokamui
 
 [akkorokamui](https://en.wikipedia.org/wiki/Akkorokamui) is a
-[Kraken](https://www.kraken.com/) asynchronous HTTP(s) client written in Rust.
-
-It currently supports all (TODO!) `v0`
-[Kraken REST APIs](https://www.kraken.com/en-gb/features/api).
+[Kraken](https://www.kraken.com/) asynchronous HTTP client written in Rust.
+Refer to the [Kraken REST APIs](https://www.kraken.com/en-gb/features/api) for
+the APIs documentation.
 
 The main goal of this project is to provide a flexible interface and a safe
 implementation.

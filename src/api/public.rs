@@ -5,6 +5,7 @@ use crate::api::ApiBuilder;
 /// List of public methods.
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum PublicMethod {
+    // Public Market Data
     AssetPairs,
     Assets,
     Depth,
