@@ -1,0 +1,95 @@
+use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
+use std::{collections::HashMap, fmt};
+
+use crate::{
+    api::{private::PrivateMethod, public::PublicMethod, ApiKind},
+    client, KRAKEN_DOMAIN,
+};
+
+/// Set of components used to build an API.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ApiBuilder {
+    pub(crate) kind: ApiKind,
+    /// Kraken domain.
+    pub(crate) domain: String,
+    /// API version.
+    pub(crate) version: String,
+    /// Public/Private API path.
+    pub(crate) path: String,
+    /// API method.
+    pub(crate) method: String,
+    /// API parameters.
+    pub(crate) params: HashMap<String, String>,
+    /// API headers map.
+    pub(crate) headers: HeaderMap,
+}
+
+impl fmt::Display for ApiBuilder {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}/{}/{}/{}",
+            self.domain, self.version, self.path, self.method
+        )?;
+
+        if self.kind == ApiKind::Public && !self.params.is_empty() {
+            write!(f, "?{}", self.params())?;
+        }
+
+        Ok(())
+    }
+}
+
+impl ApiBuilder {
+    /// Creates new API components for the given (public/private) path and method.
+    fn with_method(kind: ApiKind, method: impl fmt::Display) -> Self {
+        let mut headers = HeaderMap::with_capacity(1);
+        let user_agent = HeaderValue::from_static(client::user_agent());
+        headers.append(USER_AGENT, user_agent);
+
+        Self {
+            kind,
+            domain: KRAKEN_DOMAIN.into(),
+            version: "0".into(),
+            path: kind.to_string(),
+            method: method.to_string(),
+            params: HashMap::default(),
+            headers,
+        }
+    }
+
+    /// Adds a new parameter to the API.
+    pub fn with(
+        mut self,
+        key: impl fmt::Display,
+        value: impl fmt::Display,
+    ) -> Self {
+        self.params.insert(key.to_string(), value.to_string());
+        self
+    }
+
+    /// Constructs the default API components for a public method.
+    pub(crate) fn public(method: PublicMethod) -> Self {
+        Self::with_method(ApiKind::Public, method)
+    }
+
+    /// Constructs the default API components for a private method.
+    pub(crate) fn private(method: PrivateMethod) -> Self {
+        Self::with_method(ApiKind::Private, method)
+    }
+
+    /// Gets the URI path used for the Sign-API header.
+    pub(crate) fn uri_path(&self) -> String {
+        format!("/{}/{}/{}", self.version, self.path, self.method)
+    }
+
+    /// Gets the API list of parameters.
+    fn params(&self) -> String {
+        let mut params = String::new();
+        for (key, value) in &self.params {
+            params.push_str(&format!("{}={}&", key, value));
+        }
+        params.pop();
+        params
+    }
+}
