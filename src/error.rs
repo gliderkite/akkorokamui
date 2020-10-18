@@ -7,6 +7,8 @@ use thiserror::Error;
 pub enum Error {
     #[error("invalid key: {0}")]
     InvalidKey(String),
+    #[error("invalid user agent: {0}")]
+    InvalidUserAgent(String),
     #[error("internal error: {0}")]
     Internal(String),
     #[error("request failed: {err}")]
@@ -24,6 +26,11 @@ impl Error {
     /// Constructs an invalid key error.
     pub(crate) fn invalid_key(message: impl fmt::Display) -> Self {
         Self::InvalidKey(message.to_string())
+    }
+
+    /// Constructs an invalid user agent error.
+    pub(crate) fn invalid_agent(message: impl fmt::Display) -> Self {
+        Self::InvalidUserAgent(message.to_string())
     }
 }
 

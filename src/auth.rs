@@ -50,25 +50,52 @@ impl Credentials {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use anyhow::Result;
-    use std::env;
+    use std::{env, path::PathBuf};
+    use uuid::Uuid;
+
+    #[derive(Debug)]
+    pub struct DummyCredentials {
+        pub api_key: String,
+        pub private_key: String,
+        pub path: PathBuf,
+    }
+
+    impl DummyCredentials {
+        /// Creates a new file with dummy credentials.
+        pub fn new() -> Result<Self> {
+            let path = env::temp_dir().join(Uuid::new_v4().to_string());
+
+            let api_key = "<api_key>".to_string();
+            let private_key = "<private_key>".to_string();
+            fs::write(&path, format!("{}\n{}", api_key, private_key))?;
+
+            Ok(Self {
+                api_key,
+                private_key,
+                path,
+            })
+        }
+    }
+
+    impl Drop for DummyCredentials {
+        /// Deletes the dummy credentials file.
+        fn drop(&mut self) {
+            fs::remove_file(&self.path)
+                .expect("Cannot remove dummy credentials");
+        }
+    }
 
     #[test]
     fn read_keys() -> Result<()> {
-        let path = env::temp_dir().join("7debdd9c-3efd-4624-a35d-e5f7bc9eafb2");
+        let dummy = DummyCredentials::new()?;
 
-        let api_key = "<api_key>";
-        let private_key = "<private_key>";
-        let keys = format!("{}\n{}", api_key, private_key);
-        fs::write(&path, keys)?;
+        let credentials = Credentials::read(&dummy.path)?;
+        assert_eq!(dummy.api_key, credentials.api_key.to_str()?);
+        assert_eq!(dummy.private_key, credentials.private_key.to_str()?);
 
-        let credentials = Credentials::read(&path)?;
-        assert_eq!(api_key, credentials.api_key.to_str()?);
-        assert_eq!(private_key, credentials.private_key.to_str()?);
-
-        fs::remove_file(path)?;
         Ok(())
     }
 }

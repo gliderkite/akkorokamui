@@ -1,6 +1,6 @@
 [package]
 name = "akkorokamui"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["gliderkite <gliderkite@gmail.com>"]
 edition = "2018"
 
@@ -18,3 +18,4 @@ thiserror = "1.0"
 [dev-dependencies]
 anyhow = "1.0"
 tokio = { version = "0.2", features = ["full"] }
+uuid = { version = "0.8", features = ["v4"] }

@@ -1,9 +1,9 @@
-use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
+use reqwest::header::HeaderMap;
 use std::{collections::HashMap, fmt};
 
 use crate::{
     api::{private::PrivateMethod, public::PublicMethod, ApiKind},
-    client, KRAKEN_DOMAIN,
+    KRAKEN_DOMAIN,
 };
 
 /// Set of components used to build an API.
@@ -43,10 +43,6 @@ impl fmt::Display for ApiBuilder {
 impl ApiBuilder {
     /// Creates new API components for the given (public/private) path and method.
     fn with_method(kind: ApiKind, method: impl fmt::Display) -> Self {
-        let mut headers = HeaderMap::with_capacity(1);
-        let user_agent = HeaderValue::from_static(client::user_agent());
-        headers.append(USER_AGENT, user_agent);
-
         Self {
             kind,
             domain: KRAKEN_DOMAIN.into(),
@@ -54,7 +50,7 @@ impl ApiBuilder {
             path: kind.to_string(),
             method: method.to_string(),
             params: HashMap::default(),
-            headers,
+            headers: HeaderMap::default(),
         }
     }
 
