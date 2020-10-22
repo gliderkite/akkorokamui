@@ -3,8 +3,7 @@ use serde_json::{value::Index, Value};
 use std::fmt;
 
 pub(crate) use body::Body;
-
-use builder::ApiBuilder;
+pub use builder::ApiBuilder;
 
 pub mod private;
 pub mod public;
@@ -47,7 +46,7 @@ impl Api {
 
     /// Gets the API URL.
     pub fn url(&self) -> String {
-        self.to_string()
+        self.inner.url()
     }
 }
 

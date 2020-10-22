@@ -66,15 +66,16 @@ impl fmt::Display for Asset {
 }
 
 impl Asset {
-    /// Gets the string representation of the asset pair.
+    /// Gets the alternate pair name.
+    ///
+    /// # NOTE
+    /// Sometimes, the asset pair name may need to use the X and Z prefix depending
+    /// on the Kraken classification system, where X stands for cryptocurrency
+    /// based assets while Z is for fiat based assets. You can build a map of
+    /// pair alternative names to asset pair effective names by querying all the
+    /// AssetPairs from the homonymous API.
     pub fn pair(self, other: Self) -> String {
-        if self.is_fiat() != other.is_fiat() {
-            // crypto with fiat (or vice-versa)
-            format!("{}{}", self.with_prefix(), other.with_prefix())
-        } else {
-            // either both crypto or both fiat
-            format!("{}{}", self, other)
-        }
+        format!("{}{}", self, other)
     }
 
     /// Gets a new string representing the asset with the crypto/fiat prefix.

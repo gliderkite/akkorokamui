@@ -6,7 +6,7 @@ use crate::{
     KRAKEN_DOMAIN,
 };
 
-/// Set of components used to build an API.
+/// API builder.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApiBuilder {
     pub(crate) kind: ApiKind,
@@ -26,13 +26,9 @@ pub struct ApiBuilder {
 
 impl fmt::Display for ApiBuilder {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}/{}/{}/{}",
-            self.domain, self.version, self.path, self.method
-        )?;
+        write!(f, "{}", self.url())?;
 
-        if self.kind == ApiKind::Public && !self.params.is_empty() {
+        if !self.params.is_empty() {
             write!(f, "?{}", self.params())?;
         }
 
@@ -64,6 +60,16 @@ impl ApiBuilder {
         self
     }
 
+    /// Adds a new parameter to the API.
+    pub fn with_mut(
+        &mut self,
+        key: impl fmt::Display,
+        value: impl fmt::Display,
+    ) -> &mut Self {
+        self.params.insert(key.to_string(), value.to_string());
+        self
+    }
+
     /// Constructs the default API components for a public method.
     pub(crate) fn public(method: PublicMethod) -> Self {
         Self::with_method(ApiKind::Public, method)
@@ -74,9 +80,20 @@ impl ApiBuilder {
         Self::with_method(ApiKind::Private, method)
     }
 
-    /// Gets the URI path used for the Sign-API header.
+    /// Gets the API URI path used for the Sign-API header.
     pub(crate) fn uri_path(&self) -> String {
         format!("/{}/{}/{}", self.version, self.path, self.method)
+    }
+
+    /// Gets the API URL.
+    pub(crate) fn url(&self) -> String {
+        let mut url = format!("{}{}", self.domain, self.uri_path());
+
+        if self.kind == ApiKind::Public && !self.params.is_empty() {
+            url.push_str(&format!("?{}", self.params()));
+        }
+
+        url
     }
 
     /// Gets the API list of parameters.

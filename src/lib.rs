@@ -48,8 +48,8 @@
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     let time: Api = api::public::time().into();
-//!     let resp: ResponseValue = client.send(time).await?;
+//!     let api: Api = api::public::time().into();
+//!     let resp: ResponseValue = client.send(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     Ok(())
@@ -71,8 +71,8 @@
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     let time: Api = api::public::time().into();
-//!     let resp: ResponseValue = client.send(time).await?;
+//!     let api: Api = api::public::time().into();
+//!     let resp: ResponseValue = client.send(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -107,8 +107,8 @@
 //!        unixtime: u64,
 //!    }
 //!
-//!    let time: Api = api::public::time().into();
-//!    let resp: Response<Time> = client.send(time).await?;
+//!    let api: Api = api::public::time().into();
+//!    let resp: Response<Time> = client.send(api).await?;
 //!    println!("{:?}", resp);
 //!
 //!    if let Some(result) = resp.result {
@@ -159,13 +159,18 @@
 //!     let since = now.checked_sub(Duration::from_secs(10)).unwrap();
 //!     let since = since.elapsed()?.as_secs();
 //!
+//!     // NOTE: the asset pair name may need to use the X and Z prefix depending
+//!     // on the Kraken classification system, where X stands for cryptocurrency
+//!     // based assets while Z is for fiat based assets. You can build a map of
+//!     // pair alternative name to asset pair effective name by querying all the
+//!     // AssetPairs from the homonymous API.
 //!     let asset_pair = Asset::XBT.pair(Asset::EUR);
-//!     let time: Api = api::public::trades()
+//!     let api: Api = api::public::trades()
 //!         .with("pair", &asset_pair)
 //!         .with("since", since)
 //!         .into();
 //!
-//!     let resp: Response<Trades> = client.send(time).await?;
+//!     let resp: Response<Trades> = client.send(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -174,6 +179,42 @@
 //!                 println!("price at {}: {}", trade.time, trade.price);
 //!             }
 //!         }
+//!     }
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ### Build a map of asset pair alternate names to effective names
+//!
+//! ```no_run
+//! use akkorokamui::{api, client, Api, Asset, Client, Response};
+//! use anyhow::Result;
+//! use serde::Deserialize;
+//! use std::{collections::HashMap, convert::TryInto};
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
+//!     let user_agent = "<product>/<product-version>";
+//!     let client: Client = client::with_user_agent(user_agent).try_into()?;
+//!
+//!     let api: Api = api::public::asset_pairs().into();
+//!
+//!     #[derive(Debug, Deserialize)]
+//!     struct AssetPair {
+//!         altname: String,
+//!     }
+//!
+//!     type AssetPairs = HashMap<String, AssetPair>;
+//!     let resp: Response<AssetPairs> = client.send(api).await?;
+//!
+//!     if let Some(result) = resp.result {
+//!         let pairs: HashMap<_, _> =
+//!             result.into_iter().map(|(k, v)| (v.altname, k)).collect();
+//!
+//!         let pair_name = pairs.get(&Asset::ETH.pair(Asset::EUR));
+//!         // unwrap and use pair_name to query the Kraken APIs
+//!         println!("{:?}", pair_name);
 //!     }
 //!
 //!     Ok(())
@@ -206,9 +247,9 @@
 //!         .with_credentials(credentials)
 //!         .try_into()?;
 //!
-//!     let balance: Api = api::private::balance().into();
+//!     let api: Api = api::private::balance().into();
 //!     let resp: Response<HashMap<String, String>> =
-//!         client.send(balance).await?;
+//!         client.send(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -224,6 +265,7 @@ pub use assets::Asset;
 pub use auth::Credentials;
 pub use client::Client;
 pub use error::Error;
+pub use order::{Order, OrderType};
 
 pub mod api;
 pub mod client;
@@ -231,6 +273,7 @@ pub mod client;
 mod assets;
 mod auth;
 mod error;
+mod order;
 
 /// Crate Result type.
 type Result<T> = std::result::Result<T, Error>;
