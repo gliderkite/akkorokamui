@@ -28,7 +28,8 @@ impl fmt::Display for ApiBuilder {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.url())?;
 
-        if !self.params.is_empty() {
+        // if the API is public the parameters are already included in the URL query
+        if self.kind == ApiKind::Private && !self.params.is_empty() {
             write!(f, "?{}", self.params())?;
         }
 
