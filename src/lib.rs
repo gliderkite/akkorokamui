@@ -185,42 +185,6 @@
 //! }
 //! ```
 //!
-//! ### Build a map of asset pair alternate names to effective names
-//!
-//! ```no_run
-//! use akkorokamui::{api, client, Api, Asset, Client, Response};
-//! use anyhow::Result;
-//! use serde::Deserialize;
-//! use std::{collections::HashMap, convert::TryInto};
-//!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
-//!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent).try_into()?;
-//!
-//!     let api: Api = api::public::asset_pairs().into();
-//!
-//!     #[derive(Debug, Deserialize)]
-//!     struct AssetPair {
-//!         altname: String,
-//!     }
-//!
-//!     type AssetPairs = HashMap<String, AssetPair>;
-//!     let resp: Response<AssetPairs> = client.send(api).await?;
-//!
-//!     if let Some(result) = resp.result {
-//!         let pairs: HashMap<_, _> =
-//!             result.into_iter().map(|(k, v)| (v.altname, k)).collect();
-//!
-//!         let pair_name = pairs.get(&Asset::ETH.pair(Asset::EUR));
-//!         // unwrap and use pair_name to query the Kraken APIs
-//!         println!("{:?}", pair_name);
-//!     }
-//!
-//!     Ok(())
-//! }
-//! ```
-//!
 //! ### Client credentials and private APIs (account balance)
 //!
 //! In order to use private APIs you need to own a pair of keys: the public API key
@@ -257,6 +221,76 @@
 //!     }
 //!
 //!     Ok(())
+//! }
+//! ```
+//!
+//! ### Add a new order (validate)
+//!
+//! ```no_run
+//! use akkorokamui::{
+//!     api, client, Api, Asset, Client, Credentials, Order, OrderType, Response,
+//!     ResponseValue,
+//! };
+//! use anyhow::{bail, Result};
+//! use serde::Deserialize;
+//! use std::collections::HashMap;
+//! use std::convert::TryInto;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
+//!     let keys_path = "kraken.key";
+//!     let credentials = Credentials::read(keys_path)?;
+//!
+//!     let user_agent = "<product>/<product-version>";
+//!     let client: Client = client::with_user_agent(user_agent)
+//!         .with_credentials(credentials)
+//!         .try_into()?;
+//!
+//!     let asset_pairs = get_asset_pairs(&client).await?;
+//!     let pair = Asset::XRP.pair(Asset::GBP);
+//!     let xrp_gbp = if let Some(name) = asset_pairs.get(&pair) {
+//!         name
+//!     } else {
+//!         bail!("{} asset pair name not found", pair)
+//!     };
+//!
+//!     let api: Api = api::private::add_order()
+//!         // validate only, do not actually place any order
+//!         .with("validate", true)
+//!         .with("pair", &xrp_gbp)
+//!         .with("type", Order::Buy)
+//!         .with("ordertype", OrderType::TakeProfitLimit)
+//!         // take profit price trigger
+//!         .with("price", 0.19)
+//!         // limit price
+//!         .with("price2", 0.191)
+//!         .with("volume", 30)
+//!         // prefer fee in quote currency
+//!         .with("oflags", "fciq")
+//!         .into();
+//!
+//!     let resp: ResponseValue = client.send(api).await?;
+//!     println!("{:?}", resp);
+//!
+//!     Ok(())
+//! }
+//!
+//! async fn get_asset_pairs(client: &Client) -> Result<HashMap<String, String>> {
+//!     #[derive(Debug, Deserialize)]
+//!     struct AssetPair {
+//!         altname: String,
+//!     }
+//!
+//!     type AssetPairs = HashMap<String, AssetPair>;
+//!
+//!     let api: Api = api::public::asset_pairs().into();
+//!     let resp: Response<AssetPairs> = client.send(api).await?;
+//!
+//!     if let Some(result) = resp.result {
+//!         Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())
+//!     } else {
+//!         Ok(HashMap::new())
+//!     }
 //! }
 //! ```
 
