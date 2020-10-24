@@ -92,7 +92,7 @@
 //! you can do so by defining your own `Response<T>`.
 //!
 //! ```no_run
-//!use akkorokamui::{api, client, Api, Client, Response};
+//!use akkorokamui::{api, client, Api, Client};
 //!use anyhow::Result;
 //!use serde::Deserialize;
 //!use std::convert::TryInto;
@@ -108,7 +108,7 @@
 //!    }
 //!
 //!    let api: Api = api::public::time().into();
-//!    let resp: Response<Time> = client.send(api).await?;
+//!    let resp = client.send::<Time>(api).await?;
 //!    println!("{:?}", resp);
 //!
 //!    if let Some(result) = resp.result {
@@ -126,7 +126,7 @@
 //! needed:
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Api, Asset, Client, Response};
+//! use akkorokamui::{api, client, Api, Asset, Client};
 //! use anyhow::Result;
 //! use serde::Deserialize;
 //! use std::collections::HashMap;
@@ -170,7 +170,7 @@
 //!         .with("since", since)
 //!         .into();
 //!
-//!     let resp: Response<Trades> = client.send(api).await?;
+//!     let resp = client.send::<Trades>(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -196,7 +196,7 @@
 //! public API key and the second line contains the private key.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Api, Asset, Client, Credentials, Response};
+//! use akkorokamui::{api, client, Api, Asset, Client, Credentials};
 //! use anyhow::Result;
 //! use std::collections::HashMap;
 //! use std::convert::TryInto;
@@ -212,8 +212,7 @@
 //!         .try_into()?;
 //!
 //!     let api: Api = api::private::balance().into();
-//!     let resp: Response<HashMap<String, String>> =
-//!         client.send(api).await?;
+//!     let resp = client.send::<HashMap<String, String>>(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -228,7 +227,7 @@
 //!
 //! ```no_run
 //! use akkorokamui::{
-//!     api, client, Api, Asset, Client, Credentials, Order, OrderType, Response,
+//!     api, client, Api, Asset, Client, Credentials, Order, OrderType,
 //!     ResponseValue,
 //! };
 //! use anyhow::{bail, Result};
@@ -284,7 +283,7 @@
 //!     type AssetPairs = HashMap<String, AssetPair>;
 //!
 //!     let api: Api = api::public::asset_pairs().into();
-//!     let resp: Response<AssetPairs> = client.send(api).await?;
+//!     let resp = client.send::<AssetPairs>(api).await?;
 //!
 //!     if let Some(result) = resp.result {
 //!         Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())

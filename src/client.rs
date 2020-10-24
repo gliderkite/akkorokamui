@@ -8,7 +8,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{api::Body, Api, Credentials, Error, Result};
+use crate::{api::Body, Api, Credentials, Error, Response, Result};
 
 /// The asynchronous HTTP client used to query the Kraken servers.
 ///
@@ -30,7 +30,7 @@ impl fmt::Display for Client {
         write!(
             f,
             "{} <{}>",
-            self.user_agent.to_str().unwrap_or_default(),
+            self.user_agent.to_str().unwrap_or("User-Agent N/A"),
             user_agent()
         )
     }
@@ -38,35 +38,42 @@ impl fmt::Display for Client {
 
 impl Client {
     /// Sends the request to the Kraken servers.
-    pub async fn send<T: DeserializeOwned>(&self, mut api: Api) -> Result<T> {
-        log::trace!("{}", api);
+    pub async fn send<T: DeserializeOwned>(
+        &self,
+        mut api: Api,
+    ) -> Result<Response<T>> {
+        log::trace!("Sending request {}", api);
 
         let user_agent = self.user_agent.to_owned();
         api.inner.headers.append(USER_AGENT, user_agent);
 
-        if api.is_public() {
-            self.get(api).await
+        let resp = if api.is_public() {
+            self.get(api).await?
         } else {
-            self.post(api).await
-        }
+            self.post(api).await?
+        };
+
+        let status = resp.status();
+        let mut resp: Response<T> = resp.json().await?;
+        resp.status_code = status.as_u16();
+
+        Ok(resp)
     }
 
     /// Sends a GET request using the given API.
-    async fn get<T: DeserializeOwned>(&self, api: Api) -> Result<T> {
+    async fn get(&self, api: Api) -> Result<reqwest::Response> {
         let resp = self
             .client
             .get(&api.url())
             .headers(api.inner.headers)
             .send()
-            .await?
-            .json()
             .await?;
 
         Ok(resp)
     }
 
     /// Sends a POST request using the given API.
-    async fn post<T: DeserializeOwned>(&self, api: Api) -> Result<T> {
+    async fn post(&self, api: Api) -> Result<reqwest::Response> {
         let nonce = self.nonce()?;
         let url = api.url();
         let uri_path = api.inner.uri_path();
@@ -88,8 +95,6 @@ impl Client {
             .headers(headers)
             .body(body)
             .send()
-            .await?
-            .json()
             .await?;
 
         Ok(resp)

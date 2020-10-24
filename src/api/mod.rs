@@ -14,8 +14,13 @@ mod builder;
 /// Kraken API response.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Response<T> {
+    /// List of error messages.
     pub error: Vec<String>,
+    /// Result of API call (may not be present if errors occur).
     pub result: Option<T>,
+    /// The response HTTP status code.
+    #[serde(skip)]
+    pub status_code: u16,
 }
 
 /// Generic Kraken API response.
