@@ -27,8 +27,15 @@ pub struct Response<T> {
 pub type ResponseValue = Response<Value>;
 
 impl ResponseValue {
+    /// Gets the object at the given index from the response result.
     pub fn get(&self, index: impl Index) -> Option<&Value> {
         self.result.as_ref().and_then(|r| r.get(index))
+    }
+
+    /// Gets a mutable reference of the object at the given index from the
+    /// response result.
+    pub fn get_mut(&mut self, index: impl Index) -> Option<&mut Value> {
+        self.result.as_mut().and_then(|r| r.get_mut(index))
     }
 }
 
