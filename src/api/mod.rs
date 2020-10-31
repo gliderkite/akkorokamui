@@ -32,6 +32,16 @@ impl ResponseValue {
     }
 }
 
+impl<T> Response<T> {
+    /// Returns true only if the Response doesn't contain any error and the
+    /// HTTP status code is within [200, 299].
+    pub fn is_success(&self) -> bool {
+        self.error.is_empty()
+            && self.status_code >= 200
+            && self.status_code < 300
+    }
+}
+
 /// A single Kraken API.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Api {
