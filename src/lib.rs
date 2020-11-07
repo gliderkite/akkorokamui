@@ -6,7 +6,7 @@
 //! Add `akkorokamui` to the list of your dependencies:
 //!
 //! ```toml
-//! akkorokamui = { git = "https://github.com/gliderkite/akkorokamui.git" }
+//! akkorokamui = "0.1"
 //! ```
 //!
 //! ## Examples
@@ -116,11 +116,11 @@
 //!
 //! ```no_run
 //! use akkorokamui::{api, client, Api, Asset, Client};
-//! use anyhow::Result;
+//! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //! use std::collections::HashMap;
 //! use std::convert::TryInto;
-//! use std::time::{Duration, SystemTime};
+//! use std::time::{Duration, SystemTime, UNIX_EPOCH};
 //!
 //!  fn main() -> Result<()> {
 //!     let user_agent = "<product>/<product-version>";
@@ -143,9 +143,11 @@
 //!         last: String,
 //!     }
 //!
-//!     let now = SystemTime::now();
-//!     let since = now.checked_sub(Duration::from_secs(10)).unwrap();
-//!     let since = since.elapsed()?.as_secs();
+//!     let since = Duration::from_secs(10);
+//!     let since = match SystemTime::now().checked_sub(since) {
+//!         Some(since) => since.duration_since(UNIX_EPOCH)?.as_secs(),
+//!         _ => bail!("invalid duration"),
+//!     };
 //!
 //!     // NOTE: the asset pair name may need to use the X and Z prefix depending
 //!     // on the Kraken classification system, where X stands for cryptocurrency
