@@ -1,8 +1,14 @@
 [package]
 name = "akkorokamui"
-version = "0.0.0"
-authors = ["gliderkite <gliderkite@gmail.com>"]
+version = "0.1.0"
+authors = ["Marco Conte <gliderkite@gmail.com>"]
 edition = "2018"
+description = "Kraken REST APIs HTTP client"
+readme = "README.md"
+repository = "https://github.com/gliderkite/akkorokamui"
+documentation = "https://docs.rs/akkorokamui"
+license = "MIT"
+keywords = ["crypto", "kraken", "http", "client"]
 
 [dependencies]
 base64 = "0.13"
