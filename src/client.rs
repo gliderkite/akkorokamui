@@ -1,5 +1,8 @@
 use hmac::{Hmac, Mac, NewMac};
-use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
+use reqwest::{
+    blocking,
+    header::{HeaderMap, HeaderValue, USER_AGENT},
+};
 use serde::de::DeserializeOwned;
 use sha2::{Digest, Sha256, Sha512};
 use std::{
@@ -10,15 +13,15 @@ use std::{
 
 use crate::{api::Body, Api, Credentials, Error, Response, Result};
 
-/// The asynchronous HTTP client used to query the Kraken servers.
+/// The HTTP client used to query the Kraken servers.
 ///
 /// # Note
 /// The default client will only able to query public APIs. In order to query
 /// private APIs you need to construct the client with your private credentials.
 #[derive(Clone)]
 pub struct Client {
-    /// The HTTP asynchronous client.
-    client: reqwest::Client,
+    /// The HTTP client.
+    client: blocking::Client,
     /// The credentials to use for private APIs.
     credentials: Option<Credentials>,
     /// The User-Agent header used for each request.
@@ -38,7 +41,7 @@ impl fmt::Display for Client {
 
 impl Client {
     /// Sends the request to the Kraken servers.
-    pub async fn send<T: DeserializeOwned>(
+    pub fn send<T: DeserializeOwned>(
         &self,
         mut api: Api,
     ) -> Result<Response<T>> {
@@ -48,32 +51,31 @@ impl Client {
         api.inner.headers.append(USER_AGENT, user_agent);
 
         let resp = if api.is_public() {
-            self.get(api).await?
+            self.get(api)?
         } else {
-            self.post(api).await?
+            self.post(api)?
         };
 
         let status = resp.status();
-        let mut resp: Response<T> = resp.json().await?;
+        let mut resp: Response<T> = resp.json()?;
         resp.status_code = status.as_u16();
 
         Ok(resp)
     }
 
     /// Sends a GET request using the given API.
-    async fn get(&self, api: Api) -> Result<reqwest::Response> {
+    fn get(&self, api: Api) -> Result<blocking::Response> {
         let resp = self
             .client
             .get(&api.url())
             .headers(api.inner.headers)
-            .send()
-            .await?;
+            .send()?;
 
         Ok(resp)
     }
 
     /// Sends a POST request using the given API.
-    async fn post(&self, api: Api) -> Result<reqwest::Response> {
+    fn post(&self, api: Api) -> Result<blocking::Response> {
         let nonce = self.nonce()?;
         let url = api.url();
         let uri_path = api.inner.uri_path();
@@ -89,13 +91,7 @@ impl Client {
             headers.insert("API-Sign", api_sign);
         }
 
-        let resp = self
-            .client
-            .post(&url)
-            .headers(headers)
-            .body(body)
-            .send()
-            .await?;
+        let resp = self.client.post(&url).headers(headers).body(body).send()?;
 
         Ok(resp)
     }
@@ -171,7 +167,7 @@ impl TryInto<Client> for ClientBuilder {
         let user_agent =
             self.user_agent.try_into().map_err(Error::invalid_agent)?;
         Ok(Client {
-            client: reqwest::Client::default(),
+            client: blocking::Client::default(),
             credentials: self.credentials,
             user_agent,
         })
@@ -187,7 +183,7 @@ const fn user_agent() -> &'static str {
 impl Default for Client {
     fn default() -> Self {
         Self {
-            client: reqwest::Client::default(),
+            client: blocking::Client::default(),
             credentials: None,
             user_agent: HeaderValue::from_static(user_agent()),
         }
