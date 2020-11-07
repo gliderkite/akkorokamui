@@ -276,7 +276,7 @@
 //!     if let Some(result) = resp.result {
 //!         Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())
 //!     } else {
-//!         Ok(HashMap::new())
+//!        bail!("Cannot get asset pairs: {:?}", resp.error);
 //!     }
 //! }
 //! ```
