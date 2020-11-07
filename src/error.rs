@@ -15,6 +15,8 @@ pub enum Error {
     Request { err: String, status: Option<u16> },
     #[error("not authorized")]
     Unauthorized,
+    #[error("unknown asset: {0}")]
+    UnknownAsset(String),
 }
 
 impl Error {
@@ -31,6 +33,11 @@ impl Error {
     /// Constructs an invalid user agent error.
     pub(crate) fn invalid_agent(message: impl fmt::Display) -> Self {
         Self::InvalidUserAgent(message.to_string())
+    }
+
+    /// Constructs an unknown asset error.
+    pub(crate) fn unknown_asset(message: impl fmt::Display) -> Self {
+        Self::UnknownAsset(message.to_string())
     }
 }
 
