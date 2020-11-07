@@ -1,4 +1,4 @@
-//! Kraken asynchronous HTTP client.
+//! Kraken HTTP client.
 //!
 //!
 //! ## How to use akkorokamui
@@ -7,14 +7,6 @@
 //!
 //! ```toml
 //! akkorokamui = { git = "https://github.com/gliderkite/akkorokamui.git" }
-//! ```
-//!
-//! The HTTP client is based on [reqwest](https://github.com/seanmonstar/reqwest),
-//! therefore you'll be able to use [tokio](https://github.com/tokio-rs/tokio) as
-//! your asynchronous runtime:
-//!
-//! ```toml
-//! tokio = { version = "0.2", features = ["full"] }
 //! ```
 //!
 //! ## Examples
@@ -43,13 +35,12 @@
 //! use anyhow::Result;
 //! use std::convert::TryInto;
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
+//!  fn main() -> Result<()> {
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
 //!     let api: Api = api::public::time().into();
-//!     let resp: ResponseValue = client.send(api).await?;
+//!     let resp: ResponseValue = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     Ok(())
@@ -66,13 +57,12 @@
 //! use anyhow::Result;
 //! use std::convert::TryInto;
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
+//!  fn main() -> Result<()> {
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
 //!     let api: Api = api::public::time().into();
-//!     let resp: ResponseValue = client.send(api).await?;
+//!     let resp: ResponseValue = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -97,8 +87,7 @@
 //!use serde::Deserialize;
 //!use std::convert::TryInto;
 //!
-//!#[tokio::main]
-//!async fn main() -> Result<()> {
+//! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
 //!    let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
@@ -108,7 +97,7 @@
 //!    }
 //!
 //!    let api: Api = api::public::time().into();
-//!    let resp = client.send::<Time>(api).await?;
+//!    let resp = client.send::<Time>(api)?;
 //!    println!("{:?}", resp);
 //!
 //!    if let Some(result) = resp.result {
@@ -133,8 +122,7 @@
 //! use std::convert::TryInto;
 //! use std::time::{Duration, SystemTime};
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
+//!  fn main() -> Result<()> {
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
@@ -170,7 +158,7 @@
 //!         .with("since", since)
 //!         .into();
 //!
-//!     let resp = client.send::<Trades>(api).await?;
+//!     let resp = client.send::<Trades>(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -201,8 +189,7 @@
 //! use std::collections::HashMap;
 //! use std::convert::TryInto;
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
+//!  fn main() -> Result<()> {
 //!     let keys_path = "kraken.key";
 //!     let credentials = Credentials::read(keys_path)?;
 //!
@@ -212,7 +199,7 @@
 //!         .try_into()?;
 //!
 //!     let api: Api = api::private::balance().into();
-//!     let resp = client.send::<HashMap<String, String>>(api).await?;
+//!     let resp = client.send::<HashMap<String, String>>(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -235,8 +222,7 @@
 //! use std::collections::HashMap;
 //! use std::convert::TryInto;
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
+//!  fn main() -> Result<()> {
 //!     let keys_path = "kraken.key";
 //!     let credentials = Credentials::read(keys_path)?;
 //!
@@ -245,7 +231,7 @@
 //!         .with_credentials(credentials)
 //!         .try_into()?;
 //!
-//!     let asset_pairs = get_asset_pairs(&client).await?;
+//!     let asset_pairs = get_asset_pairs(&client)?;
 //!     let pair = Asset::XRP.pair(Asset::GBP);
 //!     let xrp_gbp = if let Some(name) = asset_pairs.get(&pair) {
 //!         name
@@ -268,13 +254,13 @@
 //!         .with("oflags", "fciq")
 //!         .into();
 //!
-//!     let resp: ResponseValue = client.send(api).await?;
+//!     let resp: ResponseValue = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     Ok(())
 //! }
 //!
-//! async fn get_asset_pairs(client: &Client) -> Result<HashMap<String, String>> {
+//!  fn get_asset_pairs(client: &Client) -> Result<HashMap<String, String>> {
 //!     #[derive(Debug, Deserialize)]
 //!     struct AssetPair {
 //!         altname: String,
@@ -283,7 +269,7 @@
 //!     type AssetPairs = HashMap<String, AssetPair>;
 //!
 //!     let api: Api = api::public::asset_pairs().into();
-//!     let resp = client.send::<AssetPairs>(api).await?;
+//!     let resp = client.send::<AssetPairs>(api)?;
 //!
 //!     if let Some(result) = resp.result {
 //!         Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())
@@ -320,14 +306,14 @@ mod tests {
     use anyhow::Result;
     use client::Client;
 
-    #[tokio::test]
-    async fn server_time() -> Result<()> {
+    #[test]
+    fn server_time() -> Result<()> {
         let client = Client::default();
 
         let api: Api = api::public::time().into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -335,8 +321,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn assets_info() -> Result<()> {
+    #[test]
+    fn assets_info() -> Result<()> {
         let client = Client::default();
         let assets = [Asset::XBT, Asset::EUR, Asset::ETH];
 
@@ -348,7 +334,7 @@ mod tests {
         let api: Api = api::public::assets().with("asset", asset).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -356,8 +342,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn asset_pairs() -> Result<()> {
+    #[test]
+    fn asset_pairs() -> Result<()> {
         let client = Client::default();
 
         let assets = api::public::asset_pairs();
@@ -365,7 +351,7 @@ mod tests {
         let api: Api = assets.with("pair", &asset_pair).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -373,8 +359,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn ticker_info() -> Result<()> {
+    #[test]
+    fn ticker_info() -> Result<()> {
         let client = Client::default();
 
         let ticker = api::public::ticker();
@@ -382,7 +368,7 @@ mod tests {
         let api: Api = ticker.with("pair", &asset_pair).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -390,8 +376,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn ohlc() -> Result<()> {
+    #[test]
+    fn ohlc() -> Result<()> {
         let client = Client::default();
 
         let ohlc = api::public::ohlc();
@@ -399,7 +385,7 @@ mod tests {
         let api: Api = ohlc.with("pair", &asset_pair).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -407,8 +393,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn depth() -> Result<()> {
+    #[test]
+    fn depth() -> Result<()> {
         let client = Client::default();
 
         let depth = api::public::depth();
@@ -416,7 +402,7 @@ mod tests {
         let api: Api = depth.with("pair", &asset_pair).with("count", 2).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -424,8 +410,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn trades() -> Result<()> {
+    #[test]
+    fn trades() -> Result<()> {
         let client = Client::default();
 
         let trades = api::public::trades();
@@ -433,7 +419,7 @@ mod tests {
         let api: Api = trades.with("pair", &asset_pair).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
@@ -441,8 +427,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn spread() -> Result<()> {
+    #[test]
+    fn spread() -> Result<()> {
         let client = Client::default();
 
         let spread = api::public::spread();
@@ -450,7 +436,7 @@ mod tests {
         let api: Api = spread.with("pair", &asset_pair).into();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api).await?;
+        let resp: ResponseValue = client.send(api)?;
         println!("{:?}", resp);
         assert!(resp.error.is_empty());
         assert!(resp.result.is_some());
