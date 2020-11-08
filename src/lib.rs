@@ -31,7 +31,7 @@
 //! [serde_json::Value](https://docs.serde.rs/serde_json/value/enum.Value.html) enum.
 //!
 //! ```no_run
-//! use akkorokamui::{api, Api, client, Client, ResponseValue};
+//! use akkorokamui::{api, client, Client, ResponseValue};
 //! use anyhow::Result;
 //! use std::convert::TryInto;
 //!
@@ -39,7 +39,7 @@
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     let api: Api = api::public::time().into();
+//!     let api = api::public::time();
 //!     let resp: ResponseValue = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
@@ -53,7 +53,7 @@
 //! available methods.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Api, Client, ResponseValue};
+//! use akkorokamui::{api, client, Client, ResponseValue};
 //! use anyhow::Result;
 //! use std::convert::TryInto;
 //!
@@ -61,7 +61,7 @@
 //!     let user_agent = "<product>/<product-version>";
 //!     let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     let api: Api = api::public::time().into();
+//!     let api = api::public::time();
 //!     let resp: ResponseValue = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
@@ -82,7 +82,7 @@
 //! you can do so by defining your own `Response<T>`.
 //!
 //! ```no_run
-//!use akkorokamui::{api, client, Api, Client};
+//!use akkorokamui::{api, client, Client, Response};
 //!use anyhow::Result;
 //!use serde::Deserialize;
 //!use std::convert::TryInto;
@@ -96,8 +96,8 @@
 //!        unixtime: u64,
 //!    }
 //!
-//!    let api: Api = api::public::time().into();
-//!    let resp = client.send::<Time>(api)?;
+//!    let api = api::public::time();
+//!    let resp: Response<Time> = client.send(api)?;
 //!    println!("{:?}", resp);
 //!
 //!    if let Some(result) = resp.result {
@@ -115,7 +115,7 @@
 //! needed:
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Api, Asset, Client};
+//! use akkorokamui::{api, client, Asset, Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //! use std::collections::HashMap;
@@ -155,12 +155,11 @@
 //!     // pair alternative name to asset pair effective name by querying all the
 //!     // AssetPairs from the homonymous API.
 //!     let asset_pair = Asset::XBT.pair(Asset::EUR);
-//!     let api: Api = api::public::trades()
+//!     let api = api::public::trades()
 //!         .with("pair", &asset_pair)
-//!         .with("since", since)
-//!         .into();
+//!         .with("since", since);
 //!
-//!     let resp = client.send::<Trades>(api)?;
+//!     let resp: Response<Trades> = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -186,7 +185,7 @@
 //! public API key and the second line contains the private key.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Api, Asset, Client, Credentials};
+//! use akkorokamui::{api, client, Asset, Client, Credentials, Response};
 //! use anyhow::Result;
 //! use std::collections::HashMap;
 //! use std::convert::TryInto;
@@ -200,8 +199,8 @@
 //!         .with_credentials(credentials)
 //!         .try_into()?;
 //!
-//!     let api: Api = api::private::balance().into();
-//!     let resp = client.send::<HashMap<String, String>>(api)?;
+//!     let api = api::private::balance();
+//!     let resp: Response<HashMap<String, String>> = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -216,7 +215,7 @@
 //!
 //! ```no_run
 //! use akkorokamui::{
-//!     api, client, Api, Asset, Client, Credentials, Order, OrderType,
+//!     api, client, Asset, Client, Credentials, Order, OrderType, Response,
 //!     ResponseValue,
 //! };
 //! use anyhow::{bail, Result};
@@ -241,7 +240,7 @@
 //!         bail!("{} asset pair name not found", pair)
 //!     };
 //!
-//!     let api: Api = api::private::add_order()
+//!     let api = api::private::add_order()
 //!         // validate only, do not actually place any order
 //!         .with("validate", true)
 //!         .with("pair", &xrp_gbp)
@@ -253,8 +252,7 @@
 //!         .with("price2", 0.191)
 //!         .with("volume", 30)
 //!         // prefer fee in quote currency
-//!         .with("oflags", "fciq")
-//!         .into();
+//!         .with("oflags", "fciq");
 //!
 //!     let resp: ResponseValue = client.send(api)?;
 //!     println!("{:?}", resp);
@@ -270,8 +268,8 @@
 //!
 //!     type AssetPairs = HashMap<String, AssetPair>;
 //!
-//!     let api: Api = api::public::asset_pairs().into();
-//!     let resp = client.send::<AssetPairs>(api)?;
+//!     let api = api::public::asset_pairs();
+//!     let resp: Response<AssetPairs> = client.send(api)?;
 //!
 //!     if let Some(result) = resp.result {
 //!         Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())
@@ -312,7 +310,7 @@ mod tests {
     fn server_time() -> Result<()> {
         let client = Client::default();
 
-        let api: Api = api::public::time().into();
+        let api = api::public::time();
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -333,7 +331,7 @@ mod tests {
             .map(|a| a.with_prefix())
             .collect::<Vec<String>>()
             .join(",");
-        let api: Api = api::public::assets().with("asset", asset).into();
+        let api = api::public::assets().with("asset", asset);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -348,9 +346,8 @@ mod tests {
     fn asset_pairs() -> Result<()> {
         let client = Client::default();
 
-        let assets = api::public::asset_pairs();
         let asset_pair = Asset::XBT.pair(Asset::EUR);
-        let api: Api = assets.with("pair", &asset_pair).into();
+        let api = api::public::asset_pairs().with("pair", &asset_pair);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -365,9 +362,8 @@ mod tests {
     fn ticker_info() -> Result<()> {
         let client = Client::default();
 
-        let ticker = api::public::ticker();
         let asset_pair = Asset::XBT.pair(Asset::EUR);
-        let api: Api = ticker.with("pair", &asset_pair).into();
+        let api = api::public::ticker().with("pair", &asset_pair);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -382,9 +378,8 @@ mod tests {
     fn ohlc() -> Result<()> {
         let client = Client::default();
 
-        let ohlc = api::public::ohlc();
         let asset_pair = Asset::XBT.pair(Asset::GBP);
-        let api: Api = ohlc.with("pair", &asset_pair).into();
+        let api = api::public::ohlc().with("pair", &asset_pair);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -399,9 +394,10 @@ mod tests {
     fn depth() -> Result<()> {
         let client = Client::default();
 
-        let depth = api::public::depth();
         let asset_pair = Asset::XBT.pair(Asset::GBP);
-        let api: Api = depth.with("pair", &asset_pair).with("count", 2).into();
+        let api = api::public::depth()
+            .with("pair", &asset_pair)
+            .with("count", 2);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -416,9 +412,8 @@ mod tests {
     fn trades() -> Result<()> {
         let client = Client::default();
 
-        let trades = api::public::trades();
         let asset_pair = Asset::XBT.pair(Asset::USD);
-        let api: Api = trades.with("pair", &asset_pair).into();
+        let api = api::public::trades().with("pair", &asset_pair);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;
@@ -433,9 +428,8 @@ mod tests {
     fn spread() -> Result<()> {
         let client = Client::default();
 
-        let spread = api::public::spread();
         let asset_pair = Asset::XBT.pair(Asset::USD);
-        let api: Api = spread.with("pair", &asset_pair).into();
+        let api = api::public::spread().with("pair", &asset_pair);
         println!("{}", api);
 
         let resp: ResponseValue = client.send(api)?;

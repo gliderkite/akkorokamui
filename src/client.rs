@@ -41,10 +41,11 @@ impl fmt::Display for Client {
 
 impl Client {
     /// Sends the request to the Kraken servers.
-    pub fn send<T: DeserializeOwned>(
+    pub fn send<Req: Into<Api>, Resp: DeserializeOwned>(
         &self,
-        mut api: Api,
-    ) -> Result<Response<T>> {
+        api: Req,
+    ) -> Result<Response<Resp>> {
+        let mut api = api.into();
         log::trace!("Sending request {}", api);
 
         let user_agent = self.user_agent.to_owned();
@@ -57,7 +58,7 @@ impl Client {
         };
 
         let status = resp.status();
-        let mut resp: Response<T> = resp.json()?;
+        let mut resp: Response<Resp> = resp.json()?;
         resp.status_code = status.as_u16();
 
         Ok(resp)
