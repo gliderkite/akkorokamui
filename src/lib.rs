@@ -35,15 +35,15 @@
 //! use anyhow::Result;
 //! use std::convert::TryInto;
 //!
-//!  fn main() -> Result<()> {
-//!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent).try_into()?;
+//! fn main() -> Result<()> {
+//!    let user_agent = "<product>/<product-version>";
+//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     let api = api::public::time();
-//!     let resp: ResponseValue = client.send(api)?;
-//!     println!("{:?}", resp);
+//!    let api = api::public::time();
+//!    let resp: ResponseValue = client.send(api)?;
+//!    println!("{:?}", resp);
 //!
-//!     Ok(())
+//!    Ok(())
 //! }
 //! ```
 //!
@@ -57,20 +57,20 @@
 //! use anyhow::Result;
 //! use std::convert::TryInto;
 //!
-//!  fn main() -> Result<()> {
-//!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent).try_into()?;
+//! fn main() -> Result<()> {
+//!    let user_agent = "<product>/<product-version>";
+//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     let api = api::public::time();
-//!     let resp: ResponseValue = client.send(api)?;
-//!     println!("{:?}", resp);
+//!    let api = api::public::time();
+//!    let resp: ResponseValue = client.send(api)?;
+//!    println!("{:?}", resp);
 //!
-//!     if let Some(result) = resp.result {
-//!         let time = result.get("unixtime").and_then(|t| t.as_u64());
-//!         println!("Time: {:?}", time);
-//!     }
+//!    if let Some(result) = resp.result {
+//!        let time = result.get("unixtime").and_then(|t| t.as_u64());
+//!        println!("Time: {:?}", time);
+//!    }
 //!
-//!     Ok(())
+//!    Ok(())
 //! }
 //! ```
 //!
@@ -82,10 +82,10 @@
 //! you can do so by defining your own `Response<T>`.
 //!
 //! ```no_run
-//!use akkorokamui::{api, client, Client, Response};
-//!use anyhow::Result;
-//!use serde::Deserialize;
-//!use std::convert::TryInto;
+//! use akkorokamui::{api, client, Client, Response};
+//! use anyhow::{bail, Result};
+//! use serde::Deserialize;
+//! use std::convert::TryInto;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
@@ -102,10 +102,12 @@
 //!
 //!    if let Some(result) = resp.result {
 //!        println!("Time: {}", result.unixtime);
+//!    } else {
+//!       bail!("Cannot get server time: {:?}", resp.error);
 //!    }
 //!
 //!    Ok(())
-//!}
+//! }
 //! ```
 //!
 //! ### Specify API parameters (recent trades)
@@ -118,59 +120,63 @@
 //! use akkorokamui::{api, client, Asset, Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
-//! use std::collections::HashMap;
-//! use std::convert::TryInto;
-//! use std::time::{Duration, SystemTime, UNIX_EPOCH};
+//! use std::{
+//!     collections::HashMap,
+//!     convert::TryInto,
+//!     time::{Duration, SystemTime, UNIX_EPOCH},
+//! };
 //!
-//!  fn main() -> Result<()> {
-//!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent).try_into()?;
+//! fn main() -> Result<()> {
+//!    let user_agent = "<product>/<product-version>";
+//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
 //!
-//!     #[derive(Debug, Deserialize)]
-//!     struct Trade {
-//!         price: String,
-//!         volume: String,
-//!         time: f32,
-//!         buy_sell: String,
-//!         market_limit: String,
-//!         miscellaneous: String,
-//!     }
+//!    #[derive(Debug, Deserialize)]
+//!    struct Trade {
+//!        price: String,
+//!        volume: String,
+//!        time: f32,
+//!        buy_sell: String,
+//!        market_limit: String,
+//!        miscellaneous: String,
+//!    }
 //!
-//!     #[derive(Debug, Deserialize)]
-//!     struct Trades {
-//!         #[serde(flatten)]
-//!         asset_pair_trades: HashMap<String, Vec<Trade>>,
-//!         last: String,
-//!     }
+//!    #[derive(Debug, Deserialize)]
+//!    struct Trades {
+//!        #[serde(flatten)]
+//!        asset_pair_trades: HashMap<String, Vec<Trade>>,
+//!        last: String,
+//!    }
 //!
-//!     let since = Duration::from_secs(10);
-//!     let since = match SystemTime::now().checked_sub(since) {
-//!         Some(since) => since.duration_since(UNIX_EPOCH)?.as_secs(),
-//!         _ => bail!("invalid duration"),
-//!     };
+//!    let since = Duration::from_secs(10);
+//!    let since = match SystemTime::now().checked_sub(since) {
+//!        Some(since) => since.duration_since(UNIX_EPOCH)?.as_secs(),
+//!        _ => bail!("invalid duration"),
+//!    };
 //!
-//!     // NOTE: the asset pair name may need to use the X and Z prefix depending
-//!     // on the Kraken classification system, where X stands for cryptocurrency
-//!     // based assets while Z is for fiat based assets. You can build a map of
-//!     // pair alternative name to asset pair effective name by querying all the
-//!     // AssetPairs from the homonymous API.
-//!     let asset_pair = Asset::XBT.pair(Asset::EUR);
-//!     let api = api::public::trades()
-//!         .with("pair", &asset_pair)
-//!         .with("since", since);
+//!    // NOTE: the asset pair name may need to use the X and Z prefix depending
+//!    // on the Kraken classification system, where X stands for cryptocurrency
+//!    // based assets while Z is for fiat based assets. You can build a map of
+//!    // pair alternative name to asset pair effective name by querying all the
+//!    // AssetPairs from the homonymous API.
+//!    let asset_pair = Asset::XBT.pair(Asset::EUR);
+//!    let api = api::public::trades()
+//!        .with("pair", &asset_pair)
+//!        .with("since", since);
 //!
-//!     let resp: Response<Trades> = client.send(api)?;
-//!     println!("{:?}", resp);
+//!    let resp: Response<Trades> = client.send(api)?;
+//!    println!("{:?}", resp);
 //!
-//!     if let Some(result) = resp.result {
-//!         if let Some(trades) = result.asset_pair_trades.get(&asset_pair) {
-//!             for trade in trades {
-//!                 println!("price at {}: {}", trade.time, trade.price);
-//!             }
-//!         }
-//!     }
+//!    if let Some(result) = resp.result {
+//!        if let Some(trades) = result.asset_pair_trades.get(&asset_pair) {
+//!            for trade in trades {
+//!                println!("price at {}: {}", trade.time, trade.price);
+//!            }
+//!        }
+//!   } else {
+//!      bail!("Cannot get trades: {:?}", resp.error);
+//!   }
 //!
-//!     Ok(())
+//!    Ok(())
 //! }
 //! ```
 //!
@@ -186,32 +192,37 @@
 //!
 //! ```no_run
 //! use akkorokamui::{api, client, Asset, Client, Credentials, Response};
-//! use anyhow::Result;
-//! use std::collections::HashMap;
-//! use std::convert::TryInto;
+//! use anyhow::{bail, Result};
+//! use std::{collections::HashMap, convert::TryInto};
 //!
-//!  fn main() -> Result<()> {
+//! type Currency = String;
+//! type Amount = String;
+//! type Balance = HashMap<Currency, Amount>;
+//!
+//! fn main() -> Result<()> {
 //!     let keys_path = "kraken.key";
 //!     let credentials = Credentials::read(keys_path)?;
-//!
 //!     let user_agent = "<product>/<product-version>";
+//!
 //!     let client: Client = client::with_user_agent(user_agent)
 //!         .with_credentials(credentials)
 //!         .try_into()?;
 //!
 //!     let api = api::private::balance();
-//!     let resp: Response<HashMap<String, String>> = client.send(api)?;
+//!     let resp: Response<Balance> = client.send(api)?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
 //!         println!("USD: {:?}", result.get(&Asset::USD.with_prefix()));
+//!     } else {
+//!         bail!("Cannot get balance: {:?}", resp.error);
 //!     }
 //!
 //!     Ok(())
 //! }
 //! ```
 //!
-//! ### Add a new order (validate)
+//! ### Add a new order
 //!
 //! ```no_run
 //! use akkorokamui::{
@@ -223,59 +234,59 @@
 //! use std::collections::HashMap;
 //! use std::convert::TryInto;
 //!
-//!  fn main() -> Result<()> {
-//!     let keys_path = "kraken.key";
-//!     let credentials = Credentials::read(keys_path)?;
+//! fn main() -> Result<()> {
+//!    let keys_path = "kraken.key";
+//!    let credentials = Credentials::read(keys_path)?;
 //!
-//!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent)
-//!         .with_credentials(credentials)
-//!         .try_into()?;
+//!    let user_agent = "<product>/<product-version>";
+//!    let client: Client = client::with_user_agent(user_agent)
+//!        .with_credentials(credentials)
+//!        .try_into()?;
 //!
-//!     let asset_pairs = get_asset_pairs(&client)?;
-//!     let pair = Asset::XRP.pair(Asset::GBP);
-//!     let xrp_gbp = if let Some(name) = asset_pairs.get(&pair) {
-//!         name
-//!     } else {
-//!         bail!("{} asset pair name not found", pair)
-//!     };
+//!    let asset_pairs = get_asset_pairs(&client)?;
+//!    let pair = Asset::XRP.pair(Asset::GBP);
+//!    let xrp_gbp = if let Some(name) = asset_pairs.get(&pair) {
+//!        name
+//!    } else {
+//!        bail!("{} asset pair name not found", pair)
+//!    };
 //!
-//!     let api = api::private::add_order()
-//!         // validate only, do not actually place any order
-//!         .with("validate", true)
-//!         .with("pair", &xrp_gbp)
-//!         .with("type", Order::Buy)
-//!         .with("ordertype", OrderType::TakeProfitLimit)
-//!         // take profit price trigger
-//!         .with("price", 0.19)
-//!         // limit price
-//!         .with("price2", 0.191)
-//!         .with("volume", 30)
-//!         // prefer fee in quote currency
-//!         .with("oflags", "fciq");
+//!    let api = api::private::add_order()
+//!        // validate only, do not actually place any order
+//!        .with("validate", true)
+//!        .with("pair", &xrp_gbp)
+//!        .with("type", Order::Buy)
+//!        .with("ordertype", OrderType::TakeProfitLimit)
+//!        // take profit price trigger
+//!        .with("price", 0.19)
+//!        // limit price
+//!        .with("price2", 0.191)
+//!        .with("volume", 30)
+//!        // prefer fee in quote currency
+//!        .with("oflags", "fciq");
 //!
-//!     let resp: ResponseValue = client.send(api)?;
-//!     println!("{:?}", resp);
+//!    let resp: ResponseValue = client.send(api)?;
+//!    println!("{:?}", resp);
 //!
-//!     Ok(())
+//!    Ok(())
 //! }
 //!
-//!  fn get_asset_pairs(client: &Client) -> Result<HashMap<String, String>> {
-//!     #[derive(Debug, Deserialize)]
-//!     struct AssetPair {
-//!         altname: String,
-//!     }
+//! fn get_asset_pairs(client: &Client) -> Result<HashMap<String, String>> {
+//!    #[derive(Debug, Deserialize)]
+//!    struct AssetPair {
+//!        altname: String,
+//!    }
 //!
-//!     type AssetPairs = HashMap<String, AssetPair>;
+//!    type AssetPairs = HashMap<String, AssetPair>;
 //!
-//!     let api = api::public::asset_pairs();
-//!     let resp: Response<AssetPairs> = client.send(api)?;
+//!    let api = api::public::asset_pairs();
+//!    let resp: Response<AssetPairs> = client.send(api)?;
 //!
-//!     if let Some(result) = resp.result {
-//!         Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())
-//!     } else {
-//!        bail!("Cannot get asset pairs: {:?}", resp.error);
-//!     }
+//!    if let Some(result) = resp.result {
+//!        Ok(result.into_iter().map(|(k, v)| (v.altname, k)).collect())
+//!    } else {
+//!       bail!("Cannot get asset pairs: {:?}", resp.error);
+//!    }
 //! }
 //! ```
 
