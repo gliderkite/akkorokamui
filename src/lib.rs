@@ -1,4 +1,4 @@
-//! Kraken HTTP client.
+//! [Kraken](https://www.kraken.com) HTTP client.
 //!
 //!
 //! ## How to use akkorokamui
@@ -6,7 +6,7 @@
 //! Add `akkorokamui` to the list of your dependencies:
 //!
 //! ```toml
-//! akkorokamui = "0.1"
+//! akkorokamui = "0.2"
 //! ```
 //!
 //! ## Examples
