@@ -159,18 +159,24 @@ impl ClientBuilder {
         self.credentials = Some(credentials);
         self
     }
+
+    /// Consumes the client builder to build a new Client.
+    pub fn build(self) -> Result<Client> {
+        self.try_into()
+    }
 }
 
 impl TryInto<Client> for ClientBuilder {
     type Error = Error;
 
     fn try_into(self) -> Result<Client> {
-        let user_agent =
-            self.user_agent.try_into().map_err(Error::invalid_agent)?;
         Ok(Client {
             client: blocking::Client::default(),
             credentials: self.credentials,
-            user_agent,
+            user_agent: self
+                .user_agent
+                .try_into()
+                .map_err(Error::invalid_agent)?,
         })
     }
 }
@@ -196,13 +202,12 @@ mod tests {
     use super::*;
     use crate::auth::tests::DummyCredentials;
     use anyhow::Result;
-    use std::convert::TryInto;
 
     const USER_AGENT: &str = user_agent();
 
     #[test]
     fn client_builder() -> Result<()> {
-        let client: Client = with_user_agent(USER_AGENT).try_into()?;
+        let client: Client = with_user_agent(USER_AGENT).build()?;
         assert_eq!(client.user_agent.to_str()?, USER_AGENT);
         assert!(client.credentials.is_none());
         Ok(())
@@ -215,7 +220,7 @@ mod tests {
         let credentials = Credentials::read(&dummy.path)?;
         let client: Client = ClientBuilder::with_user_agent(USER_AGENT)
             .with_credentials(credentials)
-            .try_into()?;
+            .build()?;
         assert_eq!(client.user_agent.to_str()?, USER_AGENT);
         assert!(client.credentials.is_some());
 

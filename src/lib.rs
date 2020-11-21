@@ -33,11 +33,10 @@
 //! ```no_run
 //! use akkorokamui::{api, client, Client, ResponseValue};
 //! use anyhow::Result;
-//! use std::convert::TryInto;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
+//!    let client: Client = client::with_user_agent(user_agent).build()?;
 //!
 //!    let api = api::public::time();
 //!    let resp: ResponseValue = client.send(api)?;
@@ -55,11 +54,10 @@
 //! ```no_run
 //! use akkorokamui::{api, client, Client, ResponseValue};
 //! use anyhow::Result;
-//! use std::convert::TryInto;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
+//!    let client: Client = client::with_user_agent(user_agent).build()?;
 //!
 //!    let api = api::public::time();
 //!    let resp: ResponseValue = client.send(api)?;
@@ -85,11 +83,10 @@
 //! use akkorokamui::{api, client, Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
-//! use std::convert::TryInto;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
+//!    let client: Client = client::with_user_agent(user_agent).build()?;
 //!
 //!    #[derive(Debug, Deserialize)]
 //!    struct Time {
@@ -120,15 +117,11 @@
 //! use akkorokamui::{api, client, Asset, Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
-//! use std::{
-//!     collections::HashMap,
-//!     convert::TryInto,
-//!     time::{Duration, SystemTime, UNIX_EPOCH},
-//! };
+//! use std::{collections::HashMap, time::{Duration, SystemTime, UNIX_EPOCH}};
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).try_into()?;
+//!    let client: Client = client::with_user_agent(user_agent).build()?;
 //!
 //!    #[derive(Debug, Deserialize)]
 //!    struct Trade {
@@ -193,7 +186,7 @@
 //! ```no_run
 //! use akkorokamui::{api, client, Asset, Client, Credentials, Response};
 //! use anyhow::{bail, Result};
-//! use std::{collections::HashMap, convert::TryInto};
+//! use std::collections::HashMap;
 //!
 //! type Currency = String;
 //! type Amount = String;
@@ -206,7 +199,7 @@
 //!
 //!     let client: Client = client::with_user_agent(user_agent)
 //!         .with_credentials(credentials)
-//!         .try_into()?;
+//!         .build()?;
 //!
 //!     let api = api::private::balance();
 //!     let resp: Response<Balance> = client.send(api)?;
@@ -232,7 +225,6 @@
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //! use std::collections::HashMap;
-//! use std::convert::TryInto;
 //!
 //! fn main() -> Result<()> {
 //!    let keys_path = "kraken.key";
@@ -241,7 +233,7 @@
 //!    let user_agent = "<product>/<product-version>";
 //!    let client: Client = client::with_user_agent(user_agent)
 //!        .with_credentials(credentials)
-//!        .try_into()?;
+//!        .build()?;
 //!
 //!    let asset_pairs = get_asset_pairs(&client)?;
 //!    let pair = Asset::XRP.pair(Asset::GBP);

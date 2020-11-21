@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Added
+- `ClientBuilder::build` method that consumes the builder to construct a new
+    `Client`, equivalent to the already existing `TryInto<Client>`.
 
 
 ## [0.2.0] - 2020-13-07
@@ -25,7 +28,8 @@ All notable changes to this project will be documented in this file.
 - `ResponseValue` type alias for generic JSON responses with utility methods to
     get the value of specific response fields.
 - `Credentials` reader that can be used to load the Kraken public API key and the
-    user's private key, which will be used by the HTTP client.
+    user's private key, which will be used by the HTTP client when constructed
+    by the `ClientBuilder`.
 - `Asset`s enumeration with utility methods for combining them into asset pairs.
 - Crate `Error` type for error reporting.
 - `Order` and `OrderType` enumerations to enhance queries type safety for the
