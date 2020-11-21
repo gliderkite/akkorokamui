@@ -3,10 +3,16 @@ All notable changes to this project will be documented in this file.
 
 
 ## [Unreleased]
+### Changed
+- Update the variants of the `Asset` enum, according to the values returned by
+    the `GET public/AssetPairs` Kraken API, which can now be used directly to
+    deserialize the API JSON response.
+- Add the Kraken Fee Credits as new `Asset`.
+
 ### Added
 - `ClientBuilder::build` method that consumes the builder to construct a new
     `Client`, equivalent to the already existing `TryInto<Client>`.
-
+- Derive more common traits for the `Order`, `OrderType` and `Asset` types.
 
 ## [0.2.0] - 2020-13-07
 ### Changed

@@ -22,9 +22,8 @@ use akkorokamui::{api, client, Asset, Client, Credentials, Response};
 use anyhow::{bail, Result};
 use std::collections::HashMap;
 
-type Currency = String;
 type Amount = String;
-type Balance = HashMap<Currency, Amount>;
+type Balance = HashMap<Asset, Amount>;
 
 fn main() -> Result<()> {
     let keys_path = "kraken.key";
@@ -40,7 +39,7 @@ fn main() -> Result<()> {
     println!("{:?}", resp);
 
     if let Some(result) = resp.result {
-        println!("USD: {:?}", result.get(&Asset::USD.with_prefix()));
+        println!("GBP: {:?}", result.get(&Asset::ZGBP));
     } else {
         bail!("Cannot get balance: {:?}", resp.error);
     }

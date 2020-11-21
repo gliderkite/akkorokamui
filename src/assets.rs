@@ -5,62 +5,79 @@ use crate::{Error, Result};
 
 /// List of crypto and fiat currencies.
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Hash,
 )]
 pub enum Asset {
     // Crypto currencies
-    ADA,
-    ALGO,
-    ATOM,
-    BAL,
-    BAT,
-    BCH,
-    COMP,
-    CRV,
-    DAI,
-    DASH,
-    DOT,
-    EOS,
-    ETC,
-    ETH,
-    FIL,
-    GNO,
-    ICX,
-    KAVA,
-    KNC,
-    KSM,
-    LINK,
-    LSK,
-    LTC,
-    MLN,
-    NANO,
-    OMG,
-    OXT,
-    PAXG,
-    QTUM,
-    REP,
-    REPV2,
-    SC,
-    SNX,
-    STORJ,
-    TRX,
-    UNI,
-    USDC,
-    USDT,
-    WAVES,
-    XBT,
-    XDG,
-    XLM,
-    XMR,
-    XRP,
-    XTZ,
-    YFI,
-    ZEC,
+    ADA,   // Cardano
+    ALGO,  // Algorand
+    ATOM,  // Cosmos
+    BAL,   // Balancer
+    BAT,   // Basic Attention Token
+    BCH,   // Bitcoin Cash
+    COMP,  // Compound
+    CRV,   // Curve
+    DAI,   // Dai
+    DASH,  // DASH
+    DOT,   // DOT
+    EOS,   // EOS
+    FIL,   // Filecoin
+    FLOW,  // Flow
+    GNO,   // Gnosis
+    ICX,   // ICON
+    KAVA,  // Kava
+    KNC,   // Kyber Network
+    KSM,   // Kusama
+    LINK,  // Chainlink
+    LSK,   // Lisk
+    OMG,   // OmiseGO
+    OXT,   // Orchid
+    PAXG,  // PAX Gold
+    QTUM,  // QTUM
+    SC,    // Siacoin
+    SNX,   // Synthetix
+    STORJ, // Storj
+    TRX,   // Tron
+    UNI,   // Uniswap
+    USDC,  // USD Coin
+    USDT,  // Tether
+    WAVE,  // Waves
+    XETC,  // Ethereum Classic
+    XETH,  // Ethereum
+    XLTC,  // Litecoin
+    XMLN,  // Melon
+    XREP,  // Augur
+    REPV2, // Augur v2
+    XXBT,  // Bitcoin
+    XXDG,  // Dogecoin
+    XXLM,  // Stellar Lumens
+    XXMR,  // Monero
+    XXRP,  // Ripple
+    XTZ,   // Tezos
+    XZEC,  // Zcash
+    YFI,   // Yearn Finance
+    ZEC,   // Zcash
+    NANO,  // Nano
+    WAVES, // Waves
     // Fiat currencies
-    AUD,
-    EUR,
-    GBP,
-    USD,
+    CHF,  // Swiss Franc
+    ZAUD, // Australian dollar
+    ZCAD, // Canadian dollar
+    ZEUR, // Euro
+    ZGBP, // Great British Pound
+    ZJPY, // Japanese Yen
+    ZUSD, // US Dollar
+    // Kraken Fee Credits
+    KFEE, // Promotional Credit
 }
 
 impl fmt::Display for Asset {
@@ -87,9 +104,8 @@ impl FromStr for Asset {
             "DASH" => Self::DASH,
             "DOT" => Self::DOT,
             "EOS" => Self::EOS,
-            "ETC" => Self::ETC,
-            "ETH" => Self::ETH,
             "FIL" => Self::FIL,
+            "FLOW" => Self::FLOW,
             "GNO" => Self::GNO,
             "ICX" => Self::ICX,
             "KAVA" => Self::KAVA,
@@ -97,15 +113,12 @@ impl FromStr for Asset {
             "KSM" => Self::KSM,
             "LINK" => Self::LINK,
             "LSK" => Self::LSK,
-            "LTC" => Self::LTC,
-            "MLN" => Self::MLN,
             "NANO" => Self::NANO,
             "OMG" => Self::OMG,
             "OXT" => Self::OXT,
             "PAXG" => Self::PAXG,
             "QTUM" => Self::QTUM,
-            "REP" => Self::REP,
-            "REPV2" => Self::REPV2,
+            "REPV2, " => Self::REPV2,
             "SC" => Self::SC,
             "SNX" => Self::SNX,
             "STORJ" => Self::STORJ,
@@ -113,20 +126,32 @@ impl FromStr for Asset {
             "UNI" => Self::UNI,
             "USDC" => Self::USDC,
             "USDT" => Self::USDT,
+            "WAVE" => Self::WAVE,
             "WAVES" => Self::WAVES,
-            "XBT" => Self::XBT,
-            "XDG" => Self::XDG,
-            "XLM" => Self::XLM,
-            "XMR" => Self::XMR,
-            "XRP" => Self::XRP,
+            "XETC" => Self::XETC,
+            "XETH" => Self::XETH,
+            "XLTC" => Self::XLTC,
+            "XMLN" => Self::XMLN,
+            "XREP" => Self::XREP,
             "XTZ" => Self::XTZ,
+            "XXBT" => Self::XXBT,
+            "XXDG" => Self::XXDG,
+            "XXLM" => Self::XXLM,
+            "XXMR" => Self::XXMR,
+            "XXRP" => Self::XXRP,
+            "XZEC" => Self::XZEC,
             "YFI" => Self::YFI,
             "ZEC" => Self::ZEC,
             // Fiat currencies
-            "AUD" => Self::AUD,
-            "EUR" => Self::EUR,
-            "GBP" => Self::GBP,
-            "USD" => Self::USD,
+            "CHF" => Self::CHF,
+            "ZAUD" => Self::ZAUD,
+            "ZCAD" => Self::ZCAD,
+            "ZEUR" => Self::ZEUR,
+            "ZGBP" => Self::ZGBP,
+            "ZJPY" => Self::ZJPY,
+            "ZUSD" => Self::ZUSD,
+            // Kraken Fee Credits
+            "KFEE" => Self::KFEE,
             _ => return Err(Error::unknown_asset(asset)),
         };
         Ok(asset)
@@ -134,35 +159,60 @@ impl FromStr for Asset {
 }
 
 impl Asset {
-    /// Gets the alternate pair name.
-    ///
-    /// # NOTE
-    /// Sometimes, the asset pair name may need to use the X and Z prefix depending
-    /// on the Kraken classification system, where X stands for cryptocurrency
-    /// based assets while Z is for fiat based assets. You can build a map of
-    /// pair alternative names to asset pair effective names by querying all the
-    /// AssetPairs from the homonymous API.
+    /// Gets the asset pair name.
     pub fn pair(self, other: Self) -> String {
         format!("{}{}", self, other)
     }
 
-    /// Gets a new string representing the asset with the crypto/fiat prefix.
-    pub fn with_prefix(self) -> String {
-        if self.is_fiat() {
-            format!("Z{}", self)
-        } else {
-            debug_assert!(self.is_crypto());
-            format!("X{}", self)
-        }
-    }
-
     /// Returns true only if this asset is a crypto currency.
     pub fn is_crypto(self) -> bool {
-        !self.is_fiat()
+        !self.is_fiat() && !self.is_kraken_credit()
     }
 
     /// Returns true only if this asset is a fiat currency.
     pub fn is_fiat(self) -> bool {
-        matches!(self, Self::USD | Self::EUR | Self::GBP | Self::AUD)
+        matches!(
+            self,
+            Self::ZAUD
+                | Self::ZCAD
+                | Self::ZEUR
+                | Self::ZGBP
+                | Self::ZJPY
+                | Self::ZUSD
+                | Self::CHF
+        )
+    }
+
+    /// Returns true only if this asset is a Kraken fee credit.
+    pub fn is_kraken_credit(self) -> bool {
+        self == Self::KFEE
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{api, Client, Response};
+    use anyhow::Result;
+    use std::collections::HashMap;
+
+    #[test]
+    fn asset_pairs() -> Result<()> {
+        let client = Client::default();
+
+        #[derive(Debug, Deserialize)]
+        struct AssetPair {
+            base: Asset,
+            quote: Asset,
+        }
+
+        type AssetPairs = HashMap<String, AssetPair>;
+
+        let api = api::public::asset_pairs();
+        let resp: Response<AssetPairs> = client.send(api)?;
+        assert!(resp.is_success());
+        assert!(resp.result.is_some());
+
+        Ok(())
     }
 }

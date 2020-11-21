@@ -2,7 +2,18 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Order to buy or sell the asset.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    Ord,
+    PartialOrd,
+    Hash,
+)]
 pub enum Order {
     Buy,
     Sell,
@@ -19,7 +30,18 @@ impl fmt::Display for Order {
 }
 
 /// Enumeration of order types.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
+    Ord,
+    PartialOrd,
+    Hash,
+)]
 pub enum OrderType {
     /// Buy/Sell asset at the best market price.
     Market,
