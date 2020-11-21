@@ -118,7 +118,7 @@ impl FromStr for Asset {
             "OXT" => Self::OXT,
             "PAXG" => Self::PAXG,
             "QTUM" => Self::QTUM,
-            "REPV2, " => Self::REPV2,
+            "REPV2" => Self::REPV2,
             "SC" => Self::SC,
             "SNX" => Self::SNX,
             "STORJ" => Self::STORJ,
@@ -193,25 +193,47 @@ impl Asset {
 mod tests {
     use super::*;
     use crate::{api, Client, Response};
-    use anyhow::Result;
+    use anyhow::{bail, Result};
     use std::collections::HashMap;
+
+    #[derive(Debug, Deserialize)]
+    struct AssetPair<T> {
+        base: T,
+        quote: T,
+    }
 
     #[test]
     fn asset_pairs() -> Result<()> {
         let client = Client::default();
 
-        #[derive(Debug, Deserialize)]
-        struct AssetPair {
-            base: Asset,
-            quote: Asset,
-        }
-
-        type AssetPairs = HashMap<String, AssetPair>;
+        type AssetPairs = HashMap<String, AssetPair<Asset>>;
 
         let api = api::public::asset_pairs();
         let resp: Response<AssetPairs> = client.send(api)?;
         assert!(resp.is_success());
         assert!(resp.result.is_some());
+
+        Ok(())
+    }
+
+    #[test]
+    fn asset_from_str() -> Result<()> {
+        let client = Client::default();
+
+        type AssetPairs = HashMap<String, AssetPair<String>>;
+
+        let api = api::public::asset_pairs();
+        let resp: Response<AssetPairs> = client.send(api)?;
+        assert!(resp.is_success());
+
+        if let Some(asset_pairs) = resp.result {
+            for asset_pair in asset_pairs.values() {
+                asset_pair.base.parse::<Asset>()?;
+                asset_pair.quote.parse::<Asset>()?;
+            }
+        } else {
+            bail!("No asset pairs in response result");
+        }
 
         Ok(())
     }
