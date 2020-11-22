@@ -3,7 +3,7 @@ use std::{fmt, str::FromStr};
 
 use crate::{Error, Result};
 
-/// List of crypto and fiat currencies.
+/// Enumeration of assets.
 #[derive(
     Debug,
     Clone,
@@ -78,6 +78,9 @@ pub enum Asset {
     ZUSD, // US Dollar
     // Kraken Fee Credits
     KFEE, // Promotional Credit
+    // Unknown asset
+    #[serde(other)]
+    Unknown,
 }
 
 impl fmt::Display for Asset {
@@ -166,7 +169,7 @@ impl Asset {
 
     /// Returns true only if this asset is a crypto currency.
     pub fn is_crypto(self) -> bool {
-        !self.is_fiat() && !self.is_kraken_credit()
+        !(self.is_fiat() || self.is_kraken_credit() || self.is_unknown())
     }
 
     /// Returns true only if this asset is a fiat currency.
@@ -187,6 +190,11 @@ impl Asset {
     pub fn is_kraken_credit(self) -> bool {
         self == Self::KFEE
     }
+
+    /// Returns true only if this asset is unknown.
+    pub fn is_unknown(self) -> bool {
+        self == Self::Unknown
+    }
 }
 
 #[cfg(test)]
@@ -194,7 +202,8 @@ mod tests {
     use super::*;
     use crate::{api, Client, Response};
     use anyhow::{bail, Result};
-    use std::collections::HashMap;
+    use rand::{distributions::Alphanumeric, thread_rng, Rng};
+    use std::{collections::HashMap, iter};
 
     #[derive(Debug, Deserialize)]
     struct AssetPair<T> {
@@ -228,12 +237,53 @@ mod tests {
 
         if let Some(asset_pairs) = resp.result {
             for asset_pair in asset_pairs.values() {
-                asset_pair.base.parse::<Asset>()?;
-                asset_pair.quote.parse::<Asset>()?;
+                let base = asset_pair.base.parse::<Asset>()?;
+                assert!(!base.is_unknown());
+                let quote = asset_pair.quote.parse::<Asset>()?;
+                assert!(!quote.is_unknown());
             }
         } else {
             bail!("No asset pairs in response result");
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn asset_deserialize() -> Result<()> {
+        let xbt: Asset = serde_json::from_str(r#""XXBT""#)?;
+        assert_eq!(Asset::XXBT, xbt);
+        assert!(xbt.is_crypto());
+        assert!(!(xbt.is_fiat() || xbt.is_kraken_credit() || xbt.is_unknown()));
+
+        let eur: Asset = serde_json::from_str(r#""ZEUR""#)?;
+        assert_eq!(Asset::ZEUR, eur);
+        assert!(eur.is_fiat());
+        assert!(
+            !(eur.is_crypto() || eur.is_kraken_credit() || eur.is_unknown())
+        );
+
+        let kfee: Asset = serde_json::from_str(r#""KFEE""#)?;
+        assert_eq!(Asset::KFEE, kfee);
+        assert!(kfee.is_kraken_credit());
+        assert!(!(kfee.is_crypto() || kfee.is_fiat() || kfee.is_unknown()));
+
+        let mut rng = thread_rng();
+        let unknown = iter::repeat(())
+            .map(|()| rng.sample(Alphanumeric))
+            .take(4)
+            .collect::<String>()
+            .to_ascii_uppercase();
+        println!("Deserializing unknown asset: {}", unknown);
+        let unknown: Asset =
+            serde_json::from_str(&format!(r#""{}""#, unknown))?;
+        assert_eq!(Asset::Unknown, unknown);
+        assert!(unknown.is_unknown());
+        assert!(
+            !(unknown.is_crypto()
+                || unknown.is_kraken_credit()
+                || unknown.is_fiat())
+        );
 
         Ok(())
     }
