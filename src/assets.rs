@@ -20,6 +20,7 @@ pub enum Asset {
     // Crypto currencies
     ADA,   // Cardano
     ALGO,  // Algorand
+    ANT,   // Argon
     ATOM,  // Cosmos
     BAL,   // Balancer
     BAT,   // Basic Attention Token
@@ -35,39 +36,41 @@ pub enum Asset {
     GNO,   // Gnosis
     ICX,   // ICON
     KAVA,  // Kava
+    KEEP,  // Keep Network
     KNC,   // Kyber Network
     KSM,   // Kusama
     LINK,  // Chainlink
     LSK,   // Lisk
+    NANO,  // Nano
     OMG,   // OmiseGO
     OXT,   // Orchid
     PAXG,  // PAX Gold
     QTUM,  // QTUM
+    REPV2, // Augur v2
     SC,    // Siacoin
     SNX,   // Synthetix
     STORJ, // Storj
+    TBTC,  // TBTC
     TRX,   // Tron
     UNI,   // Uniswap
     USDC,  // USD Coin
     USDT,  // Tether
     WAVE,  // Waves
+    WAVES, // Waves
     XETC,  // Ethereum Classic
     XETH,  // Ethereum
     XLTC,  // Litecoin
     XMLN,  // Melon
     XREP,  // Augur
-    REPV2, // Augur v2
+    XTZ,   // Tezos
     XXBT,  // Bitcoin
     XXDG,  // Dogecoin
     XXLM,  // Stellar Lumens
     XXMR,  // Monero
     XXRP,  // Ripple
-    XTZ,   // Tezos
     XZEC,  // Zcash
     YFI,   // Yearn Finance
     ZEC,   // Zcash
-    NANO,  // Nano
-    WAVES, // Waves
     // Fiat currencies
     CHF,  // Swiss Franc
     ZAUD, // Australian dollar
@@ -100,6 +103,7 @@ impl FromStr for Asset {
             // Crypto currencies
             "ADA" => Self::ADA,
             "ALGO" => Self::ALGO,
+            "ANT" => Self::ANT,
             "ATOM" => Self::ATOM,
             "BAL" => Self::BAL,
             "BAT" => Self::BAT,
@@ -115,6 +119,7 @@ impl FromStr for Asset {
             "GNO" => Self::GNO,
             "ICX" => Self::ICX,
             "KAVA" => Self::KAVA,
+            "KEEP" => Self::KEEP,
             "KNC" => Self::KNC,
             "KSM" => Self::KSM,
             "LINK" => Self::LINK,
@@ -128,6 +133,7 @@ impl FromStr for Asset {
             "SC" => Self::SC,
             "SNX" => Self::SNX,
             "STORJ" => Self::STORJ,
+            "TBTC" => Self::TBTC,
             "TRX" => Self::TRX,
             "UNI" => Self::UNI,
             "USDC" => Self::USDC,
