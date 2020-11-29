@@ -85,7 +85,10 @@ pub enum Asset {
 
 impl fmt::Display for Asset {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        match self {
+            Self::Unknown => write!(f, "<unknown asset>"),
+            _ => write!(f, "{:?}", self),
+        }
     }
 }
 
