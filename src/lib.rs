@@ -41,12 +41,12 @@
 //! [serde_json::Value](https://docs.serde.rs/serde_json/value/enum.Value.html) enum.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Client, ResponseValue};
+//! use akkorokamui::{api, Client, ResponseValue};
 //! use anyhow::Result;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).build()?;
+//!    let client = Client::new(user_agent)?;
 //!
 //!    let api = api::public::time();
 //!    let resp: ResponseValue = client.send(api)?;
@@ -62,12 +62,12 @@
 //! available methods.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Client, ResponseValue};
+//! use akkorokamui::{api, Client, ResponseValue};
 //! use anyhow::Result;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).build()?;
+//!    let client = Client::new(user_agent)?;
 //!
 //!    let api = api::public::time();
 //!    let resp: ResponseValue = client.send(api)?;
@@ -90,13 +90,13 @@
 //! you can do so by defining your own `Response<T>`.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Client, Response};
+//! use akkorokamui::{api, Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //!
 //! fn main() -> Result<()> {
 //!    let user_agent = "<product>/<product-version>";
-//!    let client: Client = client::with_user_agent(user_agent).build()?;
+//!    let client = Client::new(user_agent)?;
 //!
 //!    #[derive(Debug, Deserialize)]
 //!    struct Time {
@@ -124,7 +124,7 @@
 //! needed:
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Asset, Client, Response};
+//! use akkorokamui::{api, Asset, Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //! use std::{
@@ -134,7 +134,7 @@
 //!
 //! fn main() -> Result<()> {
 //!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent).build()?;
+//!     let client = Client::new(user_agent)?;
 //!
 //!     #[derive(Debug, Deserialize)]
 //!     struct Trade {
@@ -168,6 +168,7 @@
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
+//!         // note: check GET public/AssetPairs for the actual asset pair name
 //!         if let Some(trades) = result.asset_pair_trades.get(&asset_pair) {
 //!             for trade in trades {
 //!                 println!("price at {}: {}", trade.time, trade.price);
@@ -192,7 +193,7 @@
 //! public API key and the second line contains the private key.
 //!
 //! ```no_run
-//! use akkorokamui::{api, client, Asset, Client, Credentials, Response};
+//! use akkorokamui::{api, Asset, Client, Credentials, Response};
 //! use anyhow::{bail, Result};
 //! use std::collections::HashMap;
 //!
@@ -202,11 +203,9 @@
 //! fn main() -> Result<()> {
 //!     let keys_path = "kraken.key";
 //!     let credentials = Credentials::read(keys_path)?;
-//!     let user_agent = "<product>/<product-version>";
 //!
-//!     let client: Client = client::with_user_agent(user_agent)
-//!         .with_credentials(credentials)
-//!         .build()?;
+//!     let user_agent = "<product>/<product-version>";
+//!     let client = Client::with_credentials(user_agent, credentials)?;
 //!
 //!     let api = api::private::balance();
 //!     let resp: Response<Balance> = client.send(api)?;
@@ -226,8 +225,7 @@
 //!
 //! ```no_run
 //! use akkorokamui::{
-//!     api, client, Asset, Client, Credentials, Order, OrderType, Response,
-//!     ResponseValue,
+//!     api, Asset, Client, Credentials, Order, OrderType, Response, ResponseValue,
 //! };
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
@@ -238,9 +236,7 @@
 //!     let credentials = Credentials::read(keys_path)?;
 //!
 //!     let user_agent = "<product>/<product-version>";
-//!     let client: Client = client::with_user_agent(user_agent)
-//!         .with_credentials(credentials)
-//!         .build()?;
+//!     let client = Client::with_credentials(user_agent, credentials)?;
 //!
 //!     let asset_pairs = get_asset_pairs(&client)?;
 //!     let pair = Asset::XXRP.pair(Asset::ZGBP);

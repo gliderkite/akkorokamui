@@ -40,6 +40,21 @@ impl fmt::Display for Client {
 }
 
 impl Client {
+    /// Constructs a new Client that can only be used for public APIs.
+    pub fn new(user_agent: impl fmt::Display) -> Result<Self> {
+        ClientBuilder::with_user_agent(user_agent).build()
+    }
+
+    /// Constructs a new Client with the given credentials.
+    pub fn with_credentials(
+        user_agent: impl fmt::Display,
+        credentials: impl Into<Credentials>,
+    ) -> Result<Self> {
+        ClientBuilder::with_user_agent(user_agent)
+            .with_credentials(credentials)
+            .build()
+    }
+
     /// Sends the request to the Kraken servers.
     pub fn send<Req: Into<Api>, Resp: DeserializeOwned>(
         &self,
@@ -132,13 +147,8 @@ impl Client {
     }
 }
 
-/// Creates a new Client builder with the given user agent.
-pub fn with_user_agent(user_agent: impl fmt::Display) -> ClientBuilder {
-    ClientBuilder::with_user_agent(user_agent)
-}
-
 /// Client builder.
-pub struct ClientBuilder {
+struct ClientBuilder {
     /// The User-Agent header used for each request.
     user_agent: String,
     /// The credentials to use for private APIs.
@@ -155,13 +165,13 @@ impl ClientBuilder {
     }
 
     /// Sets the client credentials.
-    pub fn with_credentials(mut self, credentials: Credentials) -> Self {
-        self.credentials = Some(credentials);
+    fn with_credentials(mut self, credentials: impl Into<Credentials>) -> Self {
+        self.credentials = Some(credentials.into());
         self
     }
 
     /// Consumes the client builder to build a new Client.
-    pub fn build(self) -> Result<Client> {
+    fn build(self) -> Result<Client> {
         self.try_into()
     }
 }
@@ -207,7 +217,7 @@ mod tests {
 
     #[test]
     fn client_builder() -> Result<()> {
-        let client: Client = with_user_agent(USER_AGENT).build()?;
+        let client = Client::new(USER_AGENT)?;
         assert_eq!(client.user_agent.to_str()?, USER_AGENT);
         assert!(client.credentials.is_none());
         Ok(())

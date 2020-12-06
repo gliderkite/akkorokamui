@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - The dependency `reqwest` will use by default `rustls` instead of `native-tls`
     for easier cross builds. It is still possible to use the system-native TLS
     by specifying the `native-tls` optional Cargo feature.
+- Add `Client::new` and `Client::with_credentials` methods to construct HTTP
+    clients that can be used to send requests to the Kraken servers, which
+    replace the previous methods of the `ClientBuilder` type.
 
 ### Added
 - `ClientBuilder::build` method that consumes the builder to construct a new
@@ -19,6 +22,7 @@ All notable changes to this project will be documented in this file.
     variant that will be used when deserializing any unrecognized asset name.
 - Add a new public API to get the Kraken system status, as well as a new private
     API to cancel all open orders.
+
 
 ## [0.2.0] - 2020-11-13
 ### Changed

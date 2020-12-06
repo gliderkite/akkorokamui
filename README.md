@@ -18,7 +18,7 @@ use `akkorokamui`.
 ### Example: account balance
 
 ```rust
-use akkorokamui::{api, client, Asset, Client, Credentials, Response};
+use akkorokamui::{api, Asset, Client, Credentials, Response};
 use anyhow::{bail, Result};
 use std::collections::HashMap;
 
@@ -28,11 +28,9 @@ type Balance = HashMap<Asset, Amount>;
 fn main() -> Result<()> {
     let keys_path = "kraken.key";
     let credentials = Credentials::read(keys_path)?;
-    let user_agent = "<product>/<product-version>";
 
-    let client: Client = client::with_user_agent(user_agent)
-        .with_credentials(credentials)
-        .build()?;
+    let user_agent = "<product>/<product-version>";
+    let client = Client::with_credentials(user_agent, credentials)?;
 
     let api = api::private::balance();
     let resp: Response<Balance> = client.send(api)?;
