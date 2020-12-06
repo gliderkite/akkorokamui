@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 - Update the variants of the `Asset` enum, according to the values returned by
     the `GET public/AssetPairs` Kraken API, which can now be used directly to
     deserialize the API JSON response.
+- The dependency `reqwest` will use by default `rustls` instead of `native-tls`
+    for easier cross builds. It is still possible to use the system-native TLS
+    by specifying the `native-tls` optional Cargo feature.
 
 ### Added
 - `ClientBuilder::build` method that consumes the builder to construct a new

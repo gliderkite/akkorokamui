@@ -5,8 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [akkorokamui](https://en.wikipedia.org/wiki/Akkorokamui) is a HTTP client
-written in Rust that allows to query the [Kraken](https://www.kraken.com/)
-REST APIs.
+written in Rust that allows to query the
+[Kraken REST APIs](https://www.kraken.com/features/api).
 
 The main goal of this project is to provide a flexible interface and a safe
 implementation.
