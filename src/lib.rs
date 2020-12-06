@@ -9,6 +9,16 @@
 //! akkorokamui = "0.2"
 //! ```
 //!
+//! ## Features
+//! By default `akkorokamui` will make use of the [rustls](https://github.com/ctz/rustls)
+//! transport layer security to connect to HTTPs destinations. If you wish to use
+//! the system-native TLS you can do so by specifying the `native-tls` optional
+//! feature:
+//!
+//! ```toml
+//! akkorokamui = { version = "0.2", features = ["native-tls"], default-features = false }
+//! ```
+//!
 //! ## Examples
 //!
 //! ### Create a client without credentials (server time)
