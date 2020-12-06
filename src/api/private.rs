@@ -23,6 +23,7 @@ pub(crate) enum PrivateMethod {
     TradesHistory,
     // Private User Trading
     AddOrder,
+    CancelAll,
     CancelOrder,
     // Private User Funding
     DepositAddresses,
@@ -51,7 +52,7 @@ pub fn wallet_transfer() -> ApiBuilder {
     ApiBuilder::private(PrivateMethod::WalletTransfer)
 }
 
-/// Request withdrawal cancelation.
+/// Request withdrawal cancellation.
 pub fn withdraw_cancel() -> ApiBuilder {
     ApiBuilder::private(PrivateMethod::WithdrawCancel)
 }
@@ -164,4 +165,9 @@ pub fn add_order() -> ApiBuilder {
 /// Cancel open order.
 pub fn cancel_order() -> ApiBuilder {
     ApiBuilder::private(PrivateMethod::CancelOrder)
+}
+
+/// Cancel all open orders.
+pub fn cancel_all() -> ApiBuilder {
+    ApiBuilder::private(PrivateMethod::CancelAll)
 }

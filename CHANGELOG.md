@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 - Derive more common traits for the `Order`, `OrderType` and `Asset` types.
 - Add the Kraken Fee Credits (`KFEE`) as new `Asset` and add the `Asset::Unknown`
     variant that will be used when deserializing any unrecognized asset name.
+- Add a new public API to get the Kraken system status, as well as a new private
+    API to cancel all open orders.
 
 ## [0.2.0] - 2020-13-07
 ### Changed

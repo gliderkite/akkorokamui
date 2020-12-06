@@ -326,6 +326,21 @@ mod tests {
     }
 
     #[test]
+    fn system_status() -> Result<()> {
+        let client = Client::default();
+
+        let api = api::public::system_status();
+        println!("{}", api);
+
+        let resp: ResponseValue = client.send(api)?;
+        println!("{:?}", resp);
+        assert!(resp.is_success());
+        assert!(resp.result.is_some());
+
+        Ok(())
+    }
+
+    #[test]
     fn assets_info() -> Result<()> {
         let client = Client::default();
         let assets = [Asset::XXBT, Asset::ZEUR, Asset::XETH];

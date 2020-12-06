@@ -11,6 +11,7 @@ pub(crate) enum PublicMethod {
     Depth,
     OHLC,
     Spread,
+    SystemStatus,
     Ticker,
     Time,
     Trades,
@@ -60,4 +61,9 @@ pub fn trades() -> ApiBuilder {
 /// Get recent spread data.
 pub fn spread() -> ApiBuilder {
     ApiBuilder::public(PublicMethod::Spread)
+}
+
+/// Get system status.
+pub fn system_status() -> ApiBuilder {
+    ApiBuilder::public(PublicMethod::SystemStatus)
 }
