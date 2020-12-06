@@ -6,7 +6,7 @@
 //! Add `akkorokamui` to the list of your dependencies:
 //!
 //! ```toml
-//! akkorokamui = "0.2"
+//! akkorokamui = "0.3"
 //! ```
 //!
 //! ## Features
@@ -16,7 +16,7 @@
 //! feature:
 //!
 //! ```toml
-//! akkorokamui = { version = "0.2", features = ["native-tls"], default-features = false }
+//! akkorokamui = { version = "0.3", features = ["native-tls"], default-features = false }
 //! ```
 //!
 //! ## Examples

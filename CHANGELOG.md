@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## [Unreleased]
+## [0.3.0] - 2020-12-06
 ### Changed
 - Update the variants of the `Asset` enum, according to the values returned by
     the `GET public/AssetPairs` Kraken API, which can now be used directly to
@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Add a new public API to get the Kraken system status, as well as a new private
     API to cancel all open orders.
 
-## [0.2.0] - 2020-13-07
+## [0.2.0] - 2020-11-13
 ### Changed
 - The method `Client::send` accepts now two generic parameters provided by the
     caller, where the user can specify the response result type (as it happened
