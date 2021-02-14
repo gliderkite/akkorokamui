@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- Add new variants to the `Asset` enum for the newly introduced trading assets:
+    Aave (`AAVE`), Ethereum 2 (`ETH2S`), The Graph (`GRT`) and Decentraland
+    (`MANA`).
 
 ## [0.3.0] - 2020-12-06
 ### Changed

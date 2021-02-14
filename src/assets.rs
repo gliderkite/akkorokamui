@@ -18,6 +18,7 @@ use crate::{Error, Result};
 )]
 pub enum Asset {
     // Crypto currencies
+    AAVE,  // Aave
     ADA,   // Cardano
     ALGO,  // Algorand
     ANT,   // Argon
@@ -31,9 +32,11 @@ pub enum Asset {
     DASH,  // DASH
     DOT,   // DOT
     EOS,   // EOS
+    ETH2S, // Ethereum 2
     FIL,   // Filecoin
     FLOW,  // Flow
     GNO,   // Gnosis
+    GRT,   // The Graph
     ICX,   // ICON
     KAVA,  // Kava
     KEEP,  // Keep Network
@@ -41,6 +44,7 @@ pub enum Asset {
     KSM,   // Kusama
     LINK,  // Chainlink
     LSK,   // Lisk
+    MANA,  // Decentraland
     NANO,  // Nano
     OMG,   // OmiseGO
     OXT,   // Orchid
@@ -101,6 +105,7 @@ impl FromStr for Asset {
     fn from_str(asset: &str) -> Result<Self> {
         let asset = match asset.to_ascii_uppercase().as_str() {
             // Crypto currencies
+            "AAVE" => Self::AAVE,
             "ADA" => Self::ADA,
             "ALGO" => Self::ALGO,
             "ANT" => Self::ANT,
@@ -114,9 +119,11 @@ impl FromStr for Asset {
             "DASH" => Self::DASH,
             "DOT" => Self::DOT,
             "EOS" => Self::EOS,
+            "ETH2.S" => Self::ETH2S,
             "FIL" => Self::FIL,
             "FLOW" => Self::FLOW,
             "GNO" => Self::GNO,
+            "GRT" => Self::GRT,
             "ICX" => Self::ICX,
             "KAVA" => Self::KAVA,
             "KEEP" => Self::KEEP,
@@ -124,6 +131,7 @@ impl FromStr for Asset {
             "KSM" => Self::KSM,
             "LINK" => Self::LINK,
             "LSK" => Self::LSK,
+            "MANA" => Self::MANA,
             "NANO" => Self::NANO,
             "OMG" => Self::OMG,
             "OXT" => Self::OXT,
@@ -281,6 +289,7 @@ mod tests {
         let unknown = iter::repeat(())
             .map(|()| rng.sample(Alphanumeric))
             .take(4)
+            .map(char::from)
             .collect::<String>()
             .to_ascii_uppercase();
         println!("Deserializing unknown asset: {}", unknown);
