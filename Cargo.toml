@@ -27,5 +27,4 @@ thiserror = "1.0"
 
 [dev-dependencies]
 anyhow = "1.0"
-rand = "0.8"
 uuid = { version = "0.8", features = ["v4"] }

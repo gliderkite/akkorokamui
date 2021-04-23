@@ -4,6 +4,7 @@ use crate::api::ApiBuilder;
 
 /// List of public methods.
 #[derive(Debug, Copy, Clone)]
+#[allow(clippy::upper_case_acronyms)]
 pub(crate) enum PublicMethod {
     // Public Market Data
     AssetPairs,

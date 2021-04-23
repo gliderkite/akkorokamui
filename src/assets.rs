@@ -1,216 +1,72 @@
 use serde::{Deserialize, Serialize};
-use std::{fmt, str::FromStr};
+use std::{borrow::Cow, fmt};
 
-use crate::{Error, Result};
-
-/// Enumeration of assets.
+/// Kraken tradable asset name, such a cryptocurrencies or FIAT.
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Hash,
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Hash,
 )]
-pub enum Asset {
-    // Crypto currencies
-    AAVE,  // Aave
-    ADA,   // Cardano
-    ALGO,  // Algorand
-    ANT,   // Argon
-    ATOM,  // Cosmos
-    BAL,   // Balancer
-    BAT,   // Basic Attention Token
-    BCH,   // Bitcoin Cash
-    COMP,  // Compound
-    CRV,   // Curve
-    DAI,   // Dai
-    DASH,  // DASH
-    DOT,   // DOT
-    EOS,   // EOS
-    ETH2S, // Ethereum 2
-    FIL,   // Filecoin
-    FLOW,  // Flow
-    GNO,   // Gnosis
-    GRT,   // The Graph
-    ICX,   // ICON
-    KAVA,  // Kava
-    KEEP,  // Keep Network
-    KNC,   // Kyber Network
-    KSM,   // Kusama
-    LINK,  // Chainlink
-    LSK,   // Lisk
-    MANA,  // Decentraland
-    NANO,  // Nano
-    OMG,   // OmiseGO
-    OXT,   // Orchid
-    PAXG,  // PAX Gold
-    QTUM,  // QTUM
-    REPV2, // Augur v2
-    SC,    // Siacoin
-    SNX,   // Synthetix
-    STORJ, // Storj
-    TBTC,  // TBTC
-    TRX,   // Tron
-    UNI,   // Uniswap
-    USDC,  // USD Coin
-    USDT,  // Tether
-    WAVE,  // Waves
-    WAVES, // Waves
-    XETC,  // Ethereum Classic
-    XETH,  // Ethereum
-    XLTC,  // Litecoin
-    XMLN,  // Melon
-    XREP,  // Augur
-    XTZ,   // Tezos
-    XXBT,  // Bitcoin
-    XXDG,  // Dogecoin
-    XXLM,  // Stellar Lumens
-    XXMR,  // Monero
-    XXRP,  // Ripple
-    XZEC,  // Zcash
-    YFI,   // Yearn Finance
-    ZEC,   // Zcash
-    // Fiat currencies
-    CHF,  // Swiss Franc
-    ZAUD, // Australian dollar
-    ZCAD, // Canadian dollar
-    ZEUR, // Euro
-    ZGBP, // Great British Pound
-    ZJPY, // Japanese Yen
-    ZUSD, // US Dollar
-    // Kraken Fee Credits
-    KFEE, // Promotional Credit
-    // Unknown asset
-    #[serde(other)]
-    Unknown,
+pub struct Asset<'a>(Cow<'a, str>);
+
+impl<'a> fmt::Display for Asset<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
-impl fmt::Display for Asset {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Unknown => write!(f, "<unknown asset>"),
-            _ => write!(f, "{:?}", self),
+impl<'a> From<&'a str> for Asset<'a> {
+    fn from(asset: &'a str) -> Self {
+        Self(asset.into())
+    }
+}
+
+impl<'a> From<String> for Asset<'a> {
+    fn from(asset: String) -> Self {
+        Self(asset.into())
+    }
+}
+
+impl<'a> Asset<'a> {
+    /// Constructs a new Asset.
+    pub fn new(asset: impl Into<Cow<'a, str>>) -> Self {
+        Self(asset.into())
+    }
+
+    /// Constructs a new asset pair using self as base and the given Asset as
+    /// quote.
+    pub fn pair(self, quote: impl Into<Self>) -> AssetPair<'a> {
+        AssetPair {
+            base: self,
+            quote: quote.into(),
         }
     }
 }
 
-impl FromStr for Asset {
-    type Err = Error;
+/// An asset pair with base and quote assets.
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Hash,
+)]
+pub struct AssetPair<'a> {
+    /// The base component of the asset pair.
+    pub base: Asset<'a>,
+    /// The quote component of the asset pair.
+    pub quote: Asset<'a>,
+}
 
-    fn from_str(asset: &str) -> Result<Self> {
-        let asset = match asset.to_ascii_uppercase().as_str() {
-            // Crypto currencies
-            "AAVE" => Self::AAVE,
-            "ADA" => Self::ADA,
-            "ALGO" => Self::ALGO,
-            "ANT" => Self::ANT,
-            "ATOM" => Self::ATOM,
-            "BAL" => Self::BAL,
-            "BAT" => Self::BAT,
-            "BCH" => Self::BCH,
-            "COMP" => Self::COMP,
-            "CRV" => Self::CRV,
-            "DAI" => Self::DAI,
-            "DASH" => Self::DASH,
-            "DOT" => Self::DOT,
-            "EOS" => Self::EOS,
-            "ETH2.S" => Self::ETH2S,
-            "FIL" => Self::FIL,
-            "FLOW" => Self::FLOW,
-            "GNO" => Self::GNO,
-            "GRT" => Self::GRT,
-            "ICX" => Self::ICX,
-            "KAVA" => Self::KAVA,
-            "KEEP" => Self::KEEP,
-            "KNC" => Self::KNC,
-            "KSM" => Self::KSM,
-            "LINK" => Self::LINK,
-            "LSK" => Self::LSK,
-            "MANA" => Self::MANA,
-            "NANO" => Self::NANO,
-            "OMG" => Self::OMG,
-            "OXT" => Self::OXT,
-            "PAXG" => Self::PAXG,
-            "QTUM" => Self::QTUM,
-            "REPV2" => Self::REPV2,
-            "SC" => Self::SC,
-            "SNX" => Self::SNX,
-            "STORJ" => Self::STORJ,
-            "TBTC" => Self::TBTC,
-            "TRX" => Self::TRX,
-            "UNI" => Self::UNI,
-            "USDC" => Self::USDC,
-            "USDT" => Self::USDT,
-            "WAVE" => Self::WAVE,
-            "WAVES" => Self::WAVES,
-            "XETC" => Self::XETC,
-            "XETH" => Self::XETH,
-            "XLTC" => Self::XLTC,
-            "XMLN" => Self::XMLN,
-            "XREP" => Self::XREP,
-            "XTZ" => Self::XTZ,
-            "XXBT" => Self::XXBT,
-            "XXDG" => Self::XXDG,
-            "XXLM" => Self::XXLM,
-            "XXMR" => Self::XXMR,
-            "XXRP" => Self::XXRP,
-            "XZEC" => Self::XZEC,
-            "YFI" => Self::YFI,
-            "ZEC" => Self::ZEC,
-            // Fiat currencies
-            "CHF" => Self::CHF,
-            "ZAUD" => Self::ZAUD,
-            "ZCAD" => Self::ZCAD,
-            "ZEUR" => Self::ZEUR,
-            "ZGBP" => Self::ZGBP,
-            "ZJPY" => Self::ZJPY,
-            "ZUSD" => Self::ZUSD,
-            // Kraken Fee Credits
-            "KFEE" => Self::KFEE,
-            _ => return Err(Error::unknown_asset(asset)),
-        };
-        Ok(asset)
+impl<'a> fmt::Display for AssetPair<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{}", self.base, self.quote)
     }
 }
 
-impl Asset {
-    /// Gets the asset pair name.
-    pub fn pair(self, other: Self) -> String {
-        format!("{}{}", self, other)
+impl<'a> From<(Asset<'a>, Asset<'a>)> for AssetPair<'a> {
+    fn from((base, quote): (Asset<'a>, Asset<'a>)) -> Self {
+        Self { base, quote }
     }
+}
 
-    /// Returns true only if this asset is a crypto currency.
-    pub fn is_crypto(self) -> bool {
-        !(self.is_fiat() || self.is_kraken_credit() || self.is_unknown())
-    }
-
-    /// Returns true only if this asset is a fiat currency.
-    pub fn is_fiat(self) -> bool {
-        matches!(
-            self,
-            Self::ZAUD
-                | Self::ZCAD
-                | Self::ZEUR
-                | Self::ZGBP
-                | Self::ZJPY
-                | Self::ZUSD
-                | Self::CHF
-        )
-    }
-
-    /// Returns true only if this asset is a Kraken fee credit.
-    pub fn is_kraken_credit(self) -> bool {
-        self == Self::KFEE
-    }
-
-    /// Returns true only if this asset is unknown.
-    pub fn is_unknown(self) -> bool {
-        self == Self::Unknown
+impl<'a> From<AssetPair<'a>> for (Asset<'a>, Asset<'a>) {
+    fn from(asset_pair: AssetPair<'a>) -> Self {
+        (asset_pair.base, asset_pair.quote)
     }
 }
 
@@ -218,49 +74,24 @@ impl Asset {
 mod tests {
     use super::*;
     use crate::{api, Client, Response};
-    use anyhow::{bail, Result};
-    use rand::{distributions::Alphanumeric, thread_rng, Rng};
-    use std::{collections::HashMap, iter};
-
-    #[derive(Debug, Deserialize)]
-    struct AssetPair<T> {
-        base: T,
-        quote: T,
-    }
+    use anyhow::Result;
+    use std::collections::HashMap;
 
     #[test]
     fn asset_pairs() -> Result<()> {
         let client = Client::default();
 
-        type AssetPairs = HashMap<String, AssetPair<Asset>>;
+        type AssetPairs<'a> = HashMap<String, AssetPair<'a>>;
 
         let api = api::public::asset_pairs();
         let resp: Response<AssetPairs> = client.send(api)?;
         assert!(resp.is_success());
-        assert!(resp.result.is_some());
+        println!("{:#?}", resp.result);
 
-        Ok(())
-    }
-
-    #[test]
-    fn asset_from_str() -> Result<()> {
-        let client = Client::default();
-
-        type AssetPairs = HashMap<String, AssetPair<String>>;
-
-        let api = api::public::asset_pairs();
-        let resp: Response<AssetPairs> = client.send(api)?;
-        assert!(resp.is_success());
-
-        if let Some(asset_pairs) = resp.result {
-            for asset_pair in asset_pairs.values() {
-                let base = asset_pair.base.parse::<Asset>()?;
-                assert!(!base.is_unknown());
-                let quote = asset_pair.quote.parse::<Asset>()?;
-                assert!(!quote.is_unknown());
-            }
-        } else {
-            bail!("No asset pairs in response result");
+        let asset_pairs = resp.result.expect("No asset pairs in response");
+        for (_, asset_pair) in asset_pairs {
+            let (base, quote): (Asset, Asset) = asset_pair.clone().into();
+            assert_eq!(AssetPair::from((base, quote)), asset_pair);
         }
 
         Ok(())
@@ -269,39 +100,16 @@ mod tests {
     #[test]
     fn asset_deserialize() -> Result<()> {
         let xbt: Asset = serde_json::from_str(r#""XXBT""#)?;
-        assert_eq!(Asset::XXBT, xbt);
-        assert!(xbt.is_crypto());
-        assert!(!(xbt.is_fiat() || xbt.is_kraken_credit() || xbt.is_unknown()));
+        assert_eq!(Asset::new("XXBT"), xbt);
+        assert_eq!(xbt.to_string(), "XXBT".to_string());
 
         let eur: Asset = serde_json::from_str(r#""ZEUR""#)?;
-        assert_eq!(Asset::ZEUR, eur);
-        assert!(eur.is_fiat());
-        assert!(
-            !(eur.is_crypto() || eur.is_kraken_credit() || eur.is_unknown())
-        );
+        assert_eq!(Asset::new("ZEUR"), eur);
+        assert_eq!(eur.to_string(), "ZEUR".to_string());
 
         let kfee: Asset = serde_json::from_str(r#""KFEE""#)?;
-        assert_eq!(Asset::KFEE, kfee);
-        assert!(kfee.is_kraken_credit());
-        assert!(!(kfee.is_crypto() || kfee.is_fiat() || kfee.is_unknown()));
-
-        let mut rng = thread_rng();
-        let unknown = iter::repeat(())
-            .map(|()| rng.sample(Alphanumeric))
-            .take(4)
-            .map(char::from)
-            .collect::<String>()
-            .to_ascii_uppercase();
-        println!("Deserializing unknown asset: {}", unknown);
-        let unknown: Asset =
-            serde_json::from_str(&format!(r#""{}""#, unknown))?;
-        assert_eq!(Asset::Unknown, unknown);
-        assert!(unknown.is_unknown());
-        assert!(
-            !(unknown.is_crypto()
-                || unknown.is_kraken_credit()
-                || unknown.is_fiat())
-        );
+        assert_eq!(Asset::new("KFEE"), kfee);
+        assert_eq!(kfee.to_string(), "KFEE".to_string());
 
         Ok(())
     }

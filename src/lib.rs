@@ -6,7 +6,7 @@
 //! Add `akkorokamui` to the list of your dependencies:
 //!
 //! ```toml
-//! akkorokamui = "0.3"
+//! akkorokamui = "0.4"
 //! ```
 //!
 //! ## Features
@@ -16,7 +16,7 @@
 //! feature:
 //!
 //! ```toml
-//! akkorokamui = { version = "0.3", features = ["native-tls"], default-features = false }
+//! akkorokamui = { version = "0.4", features = ["native-tls"], default-features = false }
 //! ```
 //!
 //! ## Examples
@@ -159,7 +159,7 @@
 //!         _ => bail!("invalid duration"),
 //!     };
 //!
-//!     let asset_pair = Asset::XXBT.pair(Asset::ZEUR);
+//!     let asset_pair = Asset::new("XXBT").pair("ZEUR");
 //!     let api = api::public::trades()
 //!         .with("pair", &asset_pair)
 //!         .with("since", since);
@@ -169,7 +169,8 @@
 //!
 //!     if let Some(result) = resp.result {
 //!         // note: check GET public/AssetPairs for the actual asset pair name
-//!         if let Some(trades) = result.asset_pair_trades.get(&asset_pair) {
+//!         let asset_pair_name = asset_pair.to_string();
+//!         if let Some(trades) = result.asset_pair_trades.get(&asset_pair_name) {
 //!             for trade in trades {
 //!                 println!("price at {}: {}", trade.time, trade.price);
 //!             }
@@ -198,7 +199,7 @@
 //! use std::collections::HashMap;
 //!
 //! type Amount = String;
-//! type Balance = HashMap<Asset, Amount>;
+//! type Balance<'a> = HashMap<Asset<'a>, Amount>;
 //!
 //! fn main() -> Result<()> {
 //!     let keys_path = "kraken.key";
@@ -212,7 +213,7 @@
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
-//!         println!("GBP: {:?}", result.get(&Asset::ZGBP));
+//!         println!("GBP: {:?}", result.get(&Asset::new("ZGBP")));
 //!     } else {
 //!         bail!("Cannot get balance: {:?}", resp.error);
 //!     }
@@ -225,7 +226,8 @@
 //!
 //! ```no_run
 //! use akkorokamui::{
-//!     api, Asset, Client, Credentials, Order, OrderType, Response, ResponseValue,
+//!     api, Asset, AssetPair, Client, Credentials, Order, OrderType, Response,
+//!     ResponseValue,
 //! };
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
@@ -239,7 +241,7 @@
 //!     let client = Client::with_credentials(user_agent, credentials)?;
 //!
 //!     let asset_pairs = get_asset_pairs(&client)?;
-//!     let pair = Asset::XXRP.pair(Asset::ZGBP);
+//!     let pair = Asset::new("XXRP").pair("ZGBP");
 //!     let xrp_gbp = if let Some(name) = asset_pairs.get(&pair) {
 //!         name
 //!     } else {
@@ -266,14 +268,8 @@
 //!     Ok(())
 //! }
 //!
-//! fn get_asset_pairs(client: &Client) -> Result<HashMap<String, String>> {
-//!     #[derive(Debug, Deserialize)]
-//!     struct AssetPair {
-//!         base: Asset,
-//!         quote: Asset,
-//!     }
-//!
-//!     type AssetPairs = HashMap<String, AssetPair>;
+//! fn get_asset_pairs<'a>(client: &Client) -> Result<HashMap<AssetPair<'a>, String>> {
+//!     type AssetPairs<'a> = HashMap<String, AssetPair<'a>>;
 //!
 //!     let api = api::public::asset_pairs();
 //!     let resp: Response<AssetPairs> = client.send(api)?;
@@ -290,7 +286,7 @@
 //! ```
 
 pub use api::{Api, Response, ResponseValue};
-pub use assets::Asset;
+pub use assets::{Asset, AssetPair};
 pub use auth::Credentials;
 pub use client::Client;
 pub use error::Error;
@@ -349,7 +345,8 @@ mod tests {
     #[test]
     fn assets_info() -> Result<()> {
         let client = Client::default();
-        let assets = [Asset::XXBT, Asset::ZEUR, Asset::XETH];
+        let assets =
+            [Asset::new("XXBT"), Asset::new("ZEUR"), Asset::new("XETH")];
 
         let asset = assets
             .iter()
@@ -371,7 +368,7 @@ mod tests {
     fn asset_pairs() -> Result<()> {
         let client = Client::default();
 
-        let asset_pair = Asset::XXBT.pair(Asset::ZEUR);
+        let asset_pair = Asset::new("XXBT").pair("ZEUR");
         let api = api::public::asset_pairs().with("pair", &asset_pair);
         println!("{}", api);
 
@@ -387,7 +384,7 @@ mod tests {
     fn ticker_info() -> Result<()> {
         let client = Client::default();
 
-        let asset_pair = Asset::XXBT.pair(Asset::ZEUR);
+        let asset_pair = Asset::new("XXBT").pair("ZEUR");
         let api = api::public::ticker().with("pair", &asset_pair);
         println!("{}", api);
 
@@ -403,7 +400,7 @@ mod tests {
     fn ohlc() -> Result<()> {
         let client = Client::default();
 
-        let asset_pair = Asset::XXBT.pair(Asset::ZGBP);
+        let asset_pair = Asset::new("XXBT").pair("ZGBP");
         let api = api::public::ohlc().with("pair", &asset_pair);
         println!("{}", api);
 
@@ -419,7 +416,7 @@ mod tests {
     fn depth() -> Result<()> {
         let client = Client::default();
 
-        let asset_pair = Asset::XXBT.pair(Asset::ZGBP);
+        let asset_pair = Asset::new("XXBT").pair("ZGBP");
         let api = api::public::depth()
             .with("pair", &asset_pair)
             .with("count", 2);
@@ -437,7 +434,7 @@ mod tests {
     fn trades() -> Result<()> {
         let client = Client::default();
 
-        let asset_pair = Asset::XXBT.pair(Asset::ZUSD);
+        let asset_pair = Asset::new("XXBT").pair("ZUSD");
         let api = api::public::trades().with("pair", &asset_pair);
         println!("{}", api);
 
@@ -453,7 +450,7 @@ mod tests {
     fn spread() -> Result<()> {
         let client = Client::default();
 
-        let asset_pair = Asset::XXBT.pair(Asset::ZUSD);
+        let asset_pair = Asset::new("XXBT").pair("ZUSD");
         let api = api::public::spread().with("pair", &asset_pair);
         println!("{}", api);
 

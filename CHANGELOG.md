@@ -2,10 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Changed
+- The `Asset` enum has been replaced by a
+    [clone-on-write](https://doc.rust-lang.org/std/borrow/enum.Cow.html) smart
+    pointer that allows to store the string representation of the asset, and
+    does not require breaking changes if the upstream Kraken assets change.
+- The `Error::UnknownAsset` variant has been removed.
+
 ### Added
-- Add new variants to the `Asset` enum for the newly introduced trading assets:
-    Aave (`AAVE`), Ethereum 2 (`ETH2S`), The Graph (`GRT`) and Decentraland
-    (`MANA`).
+- Add a new `AssetPair` struct to represent base and quote `Asset`s.
+
 
 ## [0.3.0] - 2020-12-06
 ### Changed

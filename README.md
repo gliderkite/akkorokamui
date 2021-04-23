@@ -23,7 +23,7 @@ use anyhow::{bail, Result};
 use std::collections::HashMap;
 
 type Amount = String;
-type Balance = HashMap<Asset, Amount>;
+type Balance<'a> = HashMap<Asset<'a>, Amount>;
 
 fn main() -> Result<()> {
     let keys_path = "kraken.key";
@@ -37,7 +37,7 @@ fn main() -> Result<()> {
     println!("{:?}", resp);
 
     if let Some(result) = resp.result {
-        println!("GBP: {:?}", result.get(&Asset::ZGBP));
+        println!("GBP: {:?}", result.get(&Asset::new("ZGBP")));
     } else {
         bail!("Cannot get balance: {:?}", resp.error);
     }
