@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - The `Error::UnknownAsset` variant has been removed.
 
 ### Added
+- Add two new private APIs to cancel all orders after a specified timeout, and
+    to request a new token used to connect to and authenticate with the Kraken
+    Websockets API.
 - Add a new `AssetPair` struct to represent base and quote `Asset`s.
 
 

@@ -6,7 +6,7 @@
 
 [akkorokamui](https://en.wikipedia.org/wiki/Akkorokamui) is a HTTP client
 written in Rust that allows to query the
-[Kraken REST APIs](https://www.kraken.com/features/api).
+[Kraken REST APIs](https://docs.kraken.com/rest).
 
 The main goal of this project is to provide a flexible interface and a safe
 implementation.

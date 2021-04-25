@@ -25,6 +25,7 @@ pub(crate) enum PrivateMethod {
     AddOrder,
     CancelAll,
     CancelOrder,
+    CancelAllOrdersAfter,
     // Private User Funding
     DepositAddresses,
     DepositMethods,
@@ -34,6 +35,8 @@ pub(crate) enum PrivateMethod {
     WithdrawCancel,
     WithdrawInfo,
     WithdrawStatus,
+    // Websockets Authentication
+    GetWebSocketsToken,
 }
 
 impl fmt::Display for PrivateMethod {
@@ -170,4 +173,14 @@ pub fn cancel_order() -> ApiBuilder {
 /// Cancel all open orders.
 pub fn cancel_all() -> ApiBuilder {
     ApiBuilder::private(PrivateMethod::CancelAll)
+}
+
+/// Cancel all orders when the timeout expires.
+pub fn cancel_all_after() -> ApiBuilder {
+    ApiBuilder::private(PrivateMethod::CancelAllOrdersAfter)
+}
+
+/// Get a token to connect to and authenticate with the Websockets API.
+pub fn get_websockets_token() -> ApiBuilder {
+    ApiBuilder::private(PrivateMethod::GetWebSocketsToken)
 }
