@@ -1,7 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+
+## [0.4.0] - 2021-04-25
 ### Changed
 - The `Asset` enum has been replaced by a
     [clone-on-write](https://doc.rust-lang.org/std/borrow/enum.Cow.html) smart
