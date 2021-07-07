@@ -6,7 +6,7 @@
 //! Add `akkorokamui` to the list of your dependencies:
 //!
 //! ```toml
-//! akkorokamui = "0.4"
+//! akkorokamui = "0.5"
 //! ```
 //!
 //! ## Features
@@ -16,7 +16,7 @@
 //! feature:
 //!
 //! ```toml
-//! akkorokamui = { version = "0.4", features = ["native-tls"], default-features = false }
+//! akkorokamui = { version = "0.5", features = ["native-tls"], default-features = false }
 //! ```
 //!
 //! ## Examples
@@ -41,7 +41,7 @@
 //! [serde_json::Value](https://docs.serde.rs/serde_json/value/enum.Value.html) enum.
 //!
 //! ```no_run
-//! use akkorokamui::{api, Client, ResponseValue};
+//! use akkorokamui::{api, blocking::Client, ResponseValue};
 //! use anyhow::Result;
 //!
 //! fn main() -> Result<()> {
@@ -62,7 +62,7 @@
 //! available methods.
 //!
 //! ```no_run
-//! use akkorokamui::{api, Client, ResponseValue};
+//! use akkorokamui::{api, blocking::Client, ResponseValue};
 //! use anyhow::Result;
 //!
 //! fn main() -> Result<()> {
@@ -90,7 +90,7 @@
 //! you can do so by defining your own `Response<T>`.
 //!
 //! ```no_run
-//! use akkorokamui::{api, Client, Response};
+//! use akkorokamui::{api, blocking::Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //!
@@ -124,7 +124,7 @@
 //! needed:
 //!
 //! ```no_run
-//! use akkorokamui::{api, Asset, Client, Response};
+//! use akkorokamui::{api, Asset, blocking::Client, Response};
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
 //! use std::{
@@ -183,7 +183,7 @@
 //! }
 //! ```
 //!
-//! ### Client credentials and private APIs (account balance)
+//! ### Client credentials and private APIs (account balance - async version)
 //!
 //! In order to use private APIs you need to own a pair of keys: the public API key
 //! as well as your private key (refer to the
@@ -201,7 +201,8 @@
 //! type Amount = String;
 //! type Balance<'a> = HashMap<Asset<'a>, Amount>;
 //!
-//! fn main() -> Result<()> {
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
 //!     let keys_path = "kraken.key";
 //!     let credentials = Credentials::read(keys_path)?;
 //!
@@ -209,7 +210,7 @@
 //!     let client = Client::with_credentials(user_agent, credentials)?;
 //!
 //!     let api = api::private::balance();
-//!     let resp: Response<Balance> = client.send(api)?;
+//!     let resp: Response<Balance> = client.send(api).await?;
 //!     println!("{:?}", resp);
 //!
 //!     if let Some(result) = resp.result {
@@ -226,8 +227,8 @@
 //!
 //! ```no_run
 //! use akkorokamui::{
-//!     api, Asset, AssetPair, Client, Credentials, Order, OrderType, Response,
-//!     ResponseValue,
+//!     api, Asset, AssetPair, blocking::Client, Credentials, Order, OrderType,
+//!     Response, ResponseValue,
 //! };
 //! use anyhow::{bail, Result};
 //! use serde::Deserialize;
@@ -288,7 +289,7 @@
 pub use api::{Api, Response, ResponseValue};
 pub use assets::{Asset, AssetPair};
 pub use auth::Credentials;
-pub use client::Client;
+pub use client::{blocking, Client};
 pub use error::Error;
 pub use order::{Order, OrderType};
 
@@ -310,16 +311,16 @@ const KRAKEN_DOMAIN: &str = "https://api.kraken.com";
 mod tests {
     use super::*;
     use anyhow::Result;
-    use client::Client;
+    use client::{self, Client};
 
-    #[test]
-    fn server_time() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn server_time() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let api = api::public::time();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -327,14 +328,14 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn system_status() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn system_status() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let api = api::public::system_status();
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -342,9 +343,9 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn assets_info() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn assets_info() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
         let assets =
             [Asset::new("XXBT"), Asset::new("ZEUR"), Asset::new("XETH")];
 
@@ -356,7 +357,7 @@ mod tests {
         let api = api::public::assets().with("asset", asset);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -364,15 +365,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn asset_pairs() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn asset_pairs() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let asset_pair = Asset::new("XXBT").pair("ZEUR");
         let api = api::public::asset_pairs().with("pair", &asset_pair);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -380,15 +381,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn ticker_info() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn ticker_info() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let asset_pair = Asset::new("XXBT").pair("ZEUR");
         let api = api::public::ticker().with("pair", &asset_pair);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -396,15 +397,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn ohlc() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn ohlc() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let asset_pair = Asset::new("XXBT").pair("ZGBP");
         let api = api::public::ohlc().with("pair", &asset_pair);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -412,9 +413,9 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn depth() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn depth() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let asset_pair = Asset::new("XXBT").pair("ZGBP");
         let api = api::public::depth()
@@ -422,7 +423,7 @@ mod tests {
             .with("count", 2);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -430,15 +431,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn trades() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn trades() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let asset_pair = Asset::new("XXBT").pair("ZUSD");
         let api = api::public::trades().with("pair", &asset_pair);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());
@@ -446,15 +447,15 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn spread() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn spread() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         let asset_pair = Asset::new("XXBT").pair("ZUSD");
         let api = api::public::spread().with("pair", &asset_pair);
         println!("{}", api);
 
-        let resp: ResponseValue = client.send(api)?;
+        let resp: ResponseValue = client.send(api).await?;
         println!("{:?}", resp);
         assert!(resp.is_success());
         assert!(resp.result.is_some());

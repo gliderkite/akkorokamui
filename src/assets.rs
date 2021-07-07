@@ -73,18 +73,18 @@ impl<'a> From<AssetPair<'a>> for (Asset<'a>, Asset<'a>) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{api, Client, Response};
+    use crate::{api, client, Client, Response};
     use anyhow::Result;
     use std::collections::HashMap;
 
-    #[test]
-    fn asset_pairs() -> Result<()> {
-        let client = Client::default();
+    #[tokio::test]
+    async fn asset_pairs() -> Result<()> {
+        let client = Client::new(client::user_agent())?;
 
         type AssetPairs<'a> = HashMap<String, AssetPair<'a>>;
 
         let api = api::public::asset_pairs();
-        let resp: Response<AssetPairs> = client.send(api)?;
+        let resp: Response<AssetPairs> = client.send(api).await?;
         assert!(resp.is_success());
         println!("{:#?}", resp.result);
 

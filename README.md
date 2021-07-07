@@ -15,7 +15,7 @@ Check out the [crate documentation](https://docs.rs/akkorokamui) to learn how to
 use `akkorokamui`.
 
 
-### Example: account balance
+### Example: account balance (async version)
 
 ```rust
 use akkorokamui::{api, Asset, Client, Credentials, Response};
@@ -25,7 +25,8 @@ use std::collections::HashMap;
 type Amount = String;
 type Balance<'a> = HashMap<Asset<'a>, Amount>;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let keys_path = "kraken.key";
     let credentials = Credentials::read(keys_path)?;
 
@@ -33,7 +34,7 @@ fn main() -> Result<()> {
     let client = Client::with_credentials(user_agent, credentials)?;
 
     let api = api::private::balance();
-    let resp: Response<Balance> = client.send(api)?;
+    let resp: Response<Balance> = client.send(api).await?;
     println!("{:?}", resp);
 
     if let Some(result) = resp.result {

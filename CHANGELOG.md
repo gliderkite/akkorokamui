@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 
 
+## [Unreleased]
+### Added
+- Add new asynchronous HTTP `Client` that replaces the previous synchronous
+    client, which can now be found under the `blocking` namespace.
+
+
 ## [0.4.0] - 2021-04-25
 ### Changed
 - The `Asset` enum has been replaced by a

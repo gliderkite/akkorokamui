@@ -1,17 +1,18 @@
 use hmac::{Hmac, Mac, NewMac};
-use reqwest::{
-    blocking,
-    header::{HeaderMap, HeaderValue, USER_AGENT},
-};
-use serde::de::DeserializeOwned;
+use reqwest::header::{HeaderMap, HeaderValue};
 use sha2::{Digest, Sha256, Sha512};
 use std::{
-    convert::TryInto,
     fmt,
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{api::Body, Api, Credentials, Error, Response, Result};
+use crate::{api::Body, Api, Credentials, Error, Result};
+
+pub use r#async::Client;
+
+pub mod r#async;
+pub mod blocking;
+pub(crate) mod builder;
 
 /// The HTTP client used to query the Kraken servers.
 ///
@@ -19,16 +20,16 @@ use crate::{api::Body, Api, Credentials, Error, Response, Result};
 /// The default client will only able to query public APIs. In order to query
 /// private APIs you need to construct the client with your private credentials.
 #[derive(Clone)]
-pub struct Client {
-    /// The HTTP client.
-    client: blocking::Client,
+pub struct HttpClient<T> {
+    /// The HTTP client implementation.
+    client: T,
     /// The credentials to use for private APIs.
     credentials: Option<Credentials>,
     /// The User-Agent header used for each request.
     user_agent: HeaderValue,
 }
 
-impl fmt::Display for Client {
+impl<T> fmt::Display for HttpClient<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -39,61 +40,10 @@ impl fmt::Display for Client {
     }
 }
 
-impl Client {
-    /// Constructs a new Client that can only be used for public APIs.
-    pub fn new(user_agent: impl fmt::Display) -> Result<Self> {
-        ClientBuilder::with_user_agent(user_agent).build()
-    }
-
-    /// Constructs a new Client with the given credentials.
-    pub fn with_credentials(
-        user_agent: impl fmt::Display,
-        credentials: impl Into<Credentials>,
-    ) -> Result<Self> {
-        ClientBuilder::with_user_agent(user_agent)
-            .with_credentials(credentials)
-            .build()
-    }
-
-    /// Sends the request to the Kraken servers.
-    pub fn send<Req: Into<Api>, Resp: DeserializeOwned>(
-        &self,
-        api: Req,
-    ) -> Result<Response<Resp>> {
-        let mut api = api.into();
-        log::trace!("Sending request {}", api);
-
-        let user_agent = self.user_agent.to_owned();
-        api.inner.headers.append(USER_AGENT, user_agent);
-
-        let resp = if api.is_public() {
-            self.get(api)?
-        } else {
-            self.post(api)?
-        };
-
-        let status = resp.status();
-        let mut resp: Response<Resp> = resp.json()?;
-        resp.status_code = status.as_u16();
-
-        Ok(resp)
-    }
-
-    /// Sends a GET request using the given API.
-    fn get(&self, api: Api) -> Result<blocking::Response> {
-        let resp = self
-            .client
-            .get(&api.url())
-            .headers(api.inner.headers)
-            .send()?;
-
-        Ok(resp)
-    }
-
-    /// Sends a POST request using the given API.
-    fn post(&self, api: Api) -> Result<blocking::Response> {
+impl<T> HttpClient<T> {
+    /// Builds the POST request headers and body.
+    fn make_req_args(&self, api: Api) -> Result<(HeaderMap, String)> {
         let nonce = self.nonce()?;
-        let url = api.url();
         let uri_path = api.inner.uri_path();
 
         debug_assert!(!api.is_public());
@@ -107,9 +57,7 @@ impl Client {
             headers.insert("API-Sign", api_sign);
         }
 
-        let resp = self.client.post(&url).headers(headers).body(body).send()?;
-
-        Ok(resp)
+        Ok((headers, body))
     }
 
     /// Gets a new increasing nonce value.
@@ -134,7 +82,7 @@ impl Client {
             let sha = Sha256::digest(sha_body.as_bytes());
 
             let private_key = credentials.private_key()?;
-            let mut mac = HmacSha512::new_varkey(&private_key)?;
+            let mut mac = HmacSha512::new_from_slice(&private_key)?;
             let mut hmac_data = uri_path.into_bytes();
             hmac_data.append(&mut sha.to_vec());
             mac.update(&hmac_data);
@@ -147,93 +95,7 @@ impl Client {
     }
 }
 
-/// Client builder.
-struct ClientBuilder {
-    /// The User-Agent header used for each request.
-    user_agent: String,
-    /// The credentials to use for private APIs.
-    credentials: Option<Credentials>,
-}
-
-impl ClientBuilder {
-    /// Creates a new Client builder with the given user agent.
-    fn with_user_agent(user_agent: impl fmt::Display) -> Self {
-        Self {
-            user_agent: user_agent.to_string(),
-            credentials: None,
-        }
-    }
-
-    /// Sets the client credentials.
-    fn with_credentials(mut self, credentials: impl Into<Credentials>) -> Self {
-        self.credentials = Some(credentials.into());
-        self
-    }
-
-    /// Consumes the client builder to build a new Client.
-    fn build(self) -> Result<Client> {
-        self.try_into()
-    }
-}
-
-impl TryInto<Client> for ClientBuilder {
-    type Error = Error;
-
-    fn try_into(self) -> Result<Client> {
-        Ok(Client {
-            client: blocking::Client::default(),
-            credentials: self.credentials,
-            user_agent: self
-                .user_agent
-                .try_into()
-                .map_err(Error::invalid_agent)?,
-        })
-    }
-}
-
 /// Gets the client User Agent.
-const fn user_agent() -> &'static str {
+pub(crate) const fn user_agent() -> &'static str {
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"))
-}
-
-#[cfg(test)]
-impl Default for Client {
-    fn default() -> Self {
-        Self {
-            client: blocking::Client::default(),
-            credentials: None,
-            user_agent: HeaderValue::from_static(user_agent()),
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::auth::tests::DummyCredentials;
-    use anyhow::Result;
-
-    const USER_AGENT: &str = user_agent();
-
-    #[test]
-    fn client_builder() -> Result<()> {
-        let client = Client::new(USER_AGENT)?;
-        assert_eq!(client.user_agent.to_str()?, USER_AGENT);
-        assert!(client.credentials.is_none());
-        Ok(())
-    }
-
-    #[test]
-    fn client_builder_with_credentials() -> Result<()> {
-        let dummy = DummyCredentials::new()?;
-
-        let credentials = Credentials::read(&dummy.path)?;
-        let client: Client = ClientBuilder::with_user_agent(USER_AGENT)
-            .with_credentials(credentials)
-            .build()?;
-        assert_eq!(client.user_agent.to_str()?, USER_AGENT);
-        assert!(client.credentials.is_some());
-
-        Ok(())
-    }
 }
